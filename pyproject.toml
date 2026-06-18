@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "knowledge-base-qa"
+version = "1.0.0"
+description = "企业级 RAG 知识库问答助手 — ReAct Agent + 混合检索 + 图增强"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["rag", "langchain", "qdrant", "neo4j", "agent", "knowledge-base"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "langchain>=0.3.0,<0.4",
+    "langchain-community>=0.3.0,<0.4",
+    "langchain-qdrant>=0.1.0,<0.2",
+    "langchain-neo4j>=0.1.0,<0.2",
+    "langchain-openai>=0.2.0",
+    "qdrant-client>=1.11.0,<2",
+    "neo4j>=5.21.0,<6",
+    "sentence-transformers>=3.0.0,<4",
+    "flagembedding>=1.2.0",
+    "gradio>=4.44.0,<5",
+    "pypdf>=4.2.0,<5",
+    "markdown>=3.6,<4",
+    "python-dotenv>=1.0.0,<2",
+    "pydantic>=2.0.0,<3",
+    "pydantic-settings>=2.0.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0,<9",
+    "pytest-asyncio>=0.23.0,<1",
+    "pytest-cov>=5.0.0,<6",
+    "pytest-mock>=3.12.0,<4",
+    "ruff>=0.4.0,<1",
+    "mypy>=1.10.0,<2",
+]
+api = [
+    "fastapi>=0.111.0,<1",
+    "uvicorn[standard]>=0.30.0,<1",
+    "httpx>=0.27.0,<1",
+]
+rerank = [
+    "langchain-classic>=0.1.0,<1",
+    "langchain-community>=0.3.0,<0.4",
+    "sentence-transformers>=3.0.0,<4",
+]
+
+[project.scripts]
+kbqa = "web.gradio_app:run"
+
+[tool.setuptools.packages.find]
+include = ["core*", "services*", "chains*", "config*", "web*", "utils*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short --strict-markers --cov=core --cov=services --cov=chains --cov-report=term-missing"
+filterwarnings = [
+    "ignore:builtin type swigvarlink:DeprecationWarning",
+    "ignore:builtin type SwigPyPacked:DeprecationWarning",
+    "ignore:builtin type SwigPyObject:DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["core", "services", "chains"]
+omit = ["tests/*", "scripts/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true

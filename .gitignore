@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# HuggingFace 缓存（模型下载缓存，很大）
+.cache/
+*.cache/
+__pycache__/
+
+# 向量模型（可单独下载，很大）
+models/
+model/
+checkpoints/
+ckpt/
+
+# Gradio
+.gradio/
+
+# 数据
+# 只保留示例测试文件，不保留评估结果和你的实际数据
+data/*.json
+!data/*.example.json
+!data/test_question_example.json
+
+# 评估结果（每次评估生成，不要进 Git）
+data/*_results.json
+
+# 本地索引文件
+data/doc_id_registry.json
+!data/doc_id_registry.example.json
+
+# 日志
+*.log
+*.log.*
+
+# 测试 & 代码检查
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# 调试脚本
+scripts/debug/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb

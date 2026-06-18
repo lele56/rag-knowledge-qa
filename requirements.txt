@@ -1,0 +1,46 @@
+# ============================================================
+# 知识库问答助手 - 依赖列表
+# pip install -r requirements.txt
+# ============================================================
+
+# ---------- LangChain 核心 ----------
+langchain>=0.3.0,<0.4
+langchain-core>=0.3.0
+langchain-classic>=0.1.0
+langchain-community>=0.3.0,<0.4
+langchain-text-splitters>=0.3.0
+langchain-openai>=0.2.0
+langchain-qdrant>=0.1.0,<0.2
+langchain-neo4j>=0.1.0,<0.2
+langchain-huggingface>=0.1.0
+
+# ---------- 向量数据库 ----------
+qdrant-client>=1.11.0,<2
+
+# ---------- 图数据库 ----------
+neo4j>=5.21.0,<6
+
+# ---------- 嵌入 & 重排序（可选） ----------
+# 如果 HuggingFace 无法访问，不装下面两行，重排器会自动降级
+sentence-transformers>=3.0.0,<4
+flagembedding>=1.2.0
+
+# ---------- Web UI ----------
+gradio>=4.44.0,<5
+
+# ---------- 文档处理 ----------
+pypdf>=4.2.0,<5
+pdfplumber>=0.10.0
+markdown>=3.6,<4
+markitdown>=0.0.1
+
+# ---------- 配置 ----------
+python-dotenv>=1.0.0,<2
+pydantic>=2.0.0,<3
+pydantic-settings>=2.0.0,<3
+
+# ---------- 测试（开发用） ----------
+pytest>=8.0.0,<9
+pytest-asyncio>=0.23.0,<1
+pytest-cov>=5.0.0,<6
+pytest-mock>=3.12.0,<4
