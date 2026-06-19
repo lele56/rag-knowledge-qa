@@ -115,7 +115,22 @@ class DocumentService:
             logger.info("没有提供任何文件路径")
             return 0
 
-        chunks = load_and_split_documents(paths)
+        new_paths: list[Path] = []
+        duplicates: list[str] = []
+        for p in paths:
+            if self._check_duplicate(p):
+                duplicates.append(Path(p).name)
+            else:
+                new_paths.append(p)
+
+        if duplicates:
+            logger.info(f"🔍 重复文件跳过: {duplicates}")
+
+        if not new_paths:
+            logger.info("所有文件均为重复，无需写入")
+            return 0
+
+        chunks = load_and_split_documents(new_paths)
         if not chunks:
             logger.info("没有生成任何 chunks")
             return 0

@@ -95,44 +95,34 @@ class HybridRetriever(BaseRetriever):
           1. chunk_index + source：同一文档内的相同 chunk（Qdrant 中重复存储的）
           2. 内容前 100 字符：真正重复的内容
         """
-        seen_chunk_ids = set()  # (source, chunk_index)
+        seen_chunk_ids = set()
         seen_content_prefix = set()
         merged = []
+
+        def _try_append(doc: Document, src_label: str, rank: int, rank_key: str) -> bool:
+            meta = doc.metadata if isinstance(doc.metadata, dict) else {}
+            src = str(meta.get("source", ""))
+            idx = str(meta.get("chunk_index", ""))
+            chunk_key = f"{src}::{idx}"
+            content_key = doc.page_content[:100]
+            if chunk_key in seen_chunk_ids or content_key in seen_content_prefix:
+                return False
+            if chunk_key:
+                seen_chunk_ids.add(chunk_key)
+            seen_content_prefix.add(content_key)
+            merged.append(Document(
+                page_content=doc.page_content,
+                metadata={**doc.metadata, "_src": src_label, rank_key: rank},
+            ))
+            return True
+
         i_v, i_b = 0, 0
         while i_v < len(vector_docs) or i_b < len(bm25_docs):
             if i_v < len(vector_docs):
-                d = vector_docs[i_v]
-                meta = d.metadata if isinstance(d.metadata, dict) else {}
-                src = str(meta.get("source", ""))
-                idx = str(meta.get("chunk_index", ""))
-                chunk_key = f"{src}::{idx}"
-                content_key = d.page_content[:100]
-                is_dup = (chunk_key in seen_chunk_ids) or (content_key in seen_content_prefix)
-                if not is_dup:
-                    if chunk_key:
-                        seen_chunk_ids.add(chunk_key)
-                    seen_content_prefix.add(content_key)
-                    merged.append(Document(
-                        page_content=d.page_content,
-                        metadata={**d.metadata, "_src": "vector", "_rank_v": i_v},
-                    ))
+                _try_append(vector_docs[i_v], "vector", i_v, "_rank_v")
                 i_v += 1
             if i_b < len(bm25_docs):
-                d = bm25_docs[i_b]
-                meta = d.metadata if isinstance(d.metadata, dict) else {}
-                src = str(meta.get("source", ""))
-                idx = str(meta.get("chunk_index", ""))
-                chunk_key = f"{src}::{idx}"
-                content_key = d.page_content[:100]
-                is_dup = (chunk_key in seen_chunk_ids) or (content_key in seen_content_prefix)
-                if not is_dup:
-                    if chunk_key:
-                        seen_chunk_ids.add(chunk_key)
-                    seen_content_prefix.add(content_key)
-                    merged.append(Document(
-                        page_content=d.page_content,
-                        metadata={**d.metadata, "_src": "bm25", "_rank_b": i_b},
-                    ))
+                _try_append(bm25_docs[i_b], "bm25", i_b, "_rank_b")
                 i_b += 1
         return merged
 

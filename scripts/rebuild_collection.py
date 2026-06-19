@@ -7,7 +7,13 @@
 
 import sys
 import os
+import logging
+import warnings
 from pathlib import Path
+
+warnings.filterwarnings("ignore", message=".*FontBBox.*")
+logging.getLogger("pypdf").setLevel(logging.ERROR)
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 from config.settings import settings
@@ -64,7 +70,7 @@ def main():
     parser.add_argument(
         "dir",
         nargs="?",
-        default=r"C:\Users\25677\Desktop\论文",
+        default=str(Path(__file__).parent.parent / "data" / "test_docs"),
         help="论文目录路径",
     )
     args = parser.parse_args()

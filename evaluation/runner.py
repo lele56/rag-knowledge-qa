@@ -203,6 +203,8 @@ class EvalRunner:
             "faithfulness": sum(r.faithfulness for r in results) / n,
             "answer_relevance": sum(r.answer_relevance for r in results) / n,
             "context_relevance": sum(r.context_relevance for r in results) / n,
+            "keyword_recall": sum(r.keyword_recall for r in results) / n,
+            "keyword_f1": sum(r.keyword_f1 for r in results) / n,
             "avg_latency_ms": sum(r.latency_ms for r in results) / n,
             "avg_tokens": sum(r.tokens_used for r in results) / n,
         }

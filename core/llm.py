@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Optional
 from langchain_openai import ChatOpenAI
@@ -44,5 +45,5 @@ async def call_llm_with_retry(prompt: str, max_retries: int = 3, base_delay: flo
             if attempt < max_retries - 1:
                 delay = base_delay * (2 ** attempt)
                 logger.warning(f"LLM 调用失败 (第 {attempt + 1} 次)，{delay}s 后重试: {e}")
-                time.sleep(delay)
+                await asyncio.sleep(delay)
     raise last_error

@@ -37,6 +37,9 @@ data/*.json
 !data/*.example.json
 !data/test_question_example.json
 
+# 测试文档（本地 PDF 不入库）
+data/test_docs/
+
 # 评估结果（每次评估生成，不要进 Git）
 data/*_results.json
 

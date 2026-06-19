@@ -1,5 +1,6 @@
 # core/doc/document_loader.py
 import hashlib
+import logging
 import warnings
 from pathlib import Path
 from typing import List, Set, Optional
@@ -8,6 +9,9 @@ from langchain_core.documents import Document
 from utils.logger import logger
 from core.doc.document_chunk import split_text_to_chunks, try_markitdown, filter_low_quality_chunks
 from config.settings import settings
+
+logging.getLogger("pypdf").setLevel(logging.ERROR)
+warnings.filterwarnings("ignore", message=".*FontBBox.*")
 
 # ---------- doc_id ----------
 

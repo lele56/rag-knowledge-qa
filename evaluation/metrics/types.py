@@ -48,8 +48,23 @@ class GenerationResult:
     faithfulness: float = 0.0
     answer_relevance: float = 0.0
     context_relevance: float = 0.0
+    keyword_recall: float = 0.0
+    keyword_f1: float = 0.0
     latency_ms: float = 0.0
     tokens_used: int = 0
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "question": self.question,
+            "answer": self.answer[:500],
+            "faithfulness": self.faithfulness,
+            "answer_relevance": self.answer_relevance,
+            "context_relevance": self.context_relevance,
+            "keyword_recall": self.keyword_recall,
+            "keyword_f1": self.keyword_f1,
+            "latency_ms": self.latency_ms,
+            "tokens_used": self.tokens_used,
+        }
 
 
 @dataclass
