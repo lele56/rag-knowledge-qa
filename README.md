@@ -118,31 +118,33 @@ RETRIEVAL_STRATEGY=simple  # simple | multi_query | hyde
 ## 评估
 
 ```bash
-# 使用默认策略评估
-python scripts/_eval_now.py
+# 检索评估
+python scripts/_eval_now.py --mode retrieval
 
-# 指定策略
-python scripts/_eval_now.py simple
-python scripts/_eval_now.py multi_query
-python scripts/_eval_now.py hyde
+# 生成评估（需 LLM）
+python scripts/_eval_now.py --mode gen
 
-# 对比三种策略
-python scripts/_eval_now.py compare
+# 端到端评估
+python scripts/_eval_now.py --mode full
+
+# 指定策略 + 限制题目数
+python scripts/_eval_now.py --mode retrieval --strategy multi_query --limit 10
 ```
 
-示例输出：
+示例输出（50 题，simple 策略）：
 
 ```
 ======================================================================
   检索评估汇总
 ======================================================================
-  Recall@1:     83.33%
-  Recall@3:     83.33%
-  Recall@5:     83.33%
-  MRR:          0.8333
-  NDCG@5:       0.8300
-  Hit Rate:     83.33%
-  Avg Latency:  2774ms
+  Recall@1:     88.00%
+  Recall@3:     96.00%
+  Recall@5:     96.00%
+  MRR:          0.9133
+  NDCG@5:       0.9201
+  Hit Rate:     96.00%
+  Avg Latency:  2563ms
+  P50/P95:      2167ms / 4492ms
 ```
 
 ## 项目结构
