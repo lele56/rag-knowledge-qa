@@ -1,194 +1,402 @@
 [
   {
-    "question": "GA-VMD-TCN模型中，遗传算法(GA)的主要作用是什么？",
-    "expected_keywords": ["GA", "VMD", "optimize", "modal", "penalty"],
-    "expected_answer": "GA用于优化变分模态分解(VMD)的两个关键参数：分解模态数(K)和二次惩罚项(α)，以提高分解效果和预测精度。",
+    "question": "在GA-VMD-TCN模型中，TCN（时间卷积网络）相比传统的RNN/LSTM在处理时间序列时的主要优势是什么？",
+    "expected_keywords": ["TCN", "dilated convolution", "parallel", "long-term dependency", "causal"],
+    "expected_answer": "TCN通过扩张卷积（dilated convolution）和因果卷积，能够并行处理序列，同时有效捕捉长期依赖关系，且训练速度更快，避免了RNN的梯度消失问题。",
     "category": "model",
     "difficulty": "easy",
-    "tags": ["GA", "VMD", "参数优化"]
+    "tags": ["TCN", "优势"]
   },
   {
-    "question": "在GA-VMD-TCN模型中，使用了哪两个股票指数的每日收盘价数据进行实验验证？",
-    "expected_keywords": ["SSEC", "S&P 500", "stock index", "daily closing"],
-    "expected_answer": "该模型使用了上证综合指数（SSEC）和标准普尔500指数（S&P 500）的每日收盘价数据进行实验。",
-    "category": "data",
+    "question": "GA-VMD-TCN实验中使用了哪几个评估指标来量化预测性能？",
+    "expected_keywords": ["MAE", "SMAPE", "RMSE", "M-DM test", "evaluation metrics"],
+    "expected_answer": "实验使用了平均绝对误差（MAE）、对称平均绝对百分比误差（SMAPE）、均方根误差（RMSE）以及修正的Diebold-Mariano（M-DM）检验来评估预测性能。",
+    "category": "evaluation",
     "difficulty": "easy",
-    "tags": ["数据", "股票指数", "实验"]
+    "tags": ["评估指标", "实验"]
   },
   {
-    "question": "请简要说明GA-VMD-TCN模型如何通过结合“分解-预测-重构”的框架来提高股指预测的准确性？",
-    "expected_keywords": ["decompos", "IMF", "VMD", "TCN", "reconstruct", "non-stationary"],
-    "expected_answer": "该框架首先用GA优化的VMD将复杂的原始股指数据分解为多个具有不同频率特征的本征模态函数(IMF)，降低了数据的非平稳性和噪声；然后使用擅长捕捉长期依赖关系的TCN对每个IMF分别进行预测；最后将所有IMF的预测值重构，得到最终的预测结果。这种分而治之的策略提高了预测精度。",
-    "category": "model",
+    "question": "GA-VMD-TCN模型中的遗传算法（GA）是如何与VMD结合来优化分解参数的？请简述其流程。",
+    "expected_keywords": ["GA", "VMD", "optimize", "K", "α", "fitness", "sample entropy"],
+    "expected_answer": "GA将VMD的参数（分解模态数K和惩罚因子α）编码为染色体，以样本熵作为适应度函数，通过选择、交叉、变异迭代搜索最优参数组合，使VMD分解效果最佳。",
+    "category": "method",
     "difficulty": "medium",
-    "tags": ["框架", "分解预测重构", "准确性"]
+    "tags": ["GA", "参数优化", "VMD"]
   },
   {
-    "question": "论文中使用M-DM (修正的Diebold-Mariano) 检验来比较模型性能，请解释其零假设(H0)和替代假设(H1)分别是什么，以及负的M-DM统计量意味着什么？",
-    "expected_keywords": ["M-DM", "null hypothesis", "H0", "H1", "prediction error"],
-    "expected_answer": "M-DM检验的零假设(H0)是所比较的两个模型具有相同的预测精度。替代假设(H1)是本文提出的GA-VMD-TCN模型比其他基线模型具有更好的预测能力。负的M-DM统计量表明，GA-VMD-TCN模型的预测误差（基于选定的损失函数）小于对比模型，因此性能更优。",
+    "question": "为什么在GA-VMD-TCN的鲁棒性测试中，要分别改变样本周期、评估方法、样本数据和商业周期？这些测试各自验证了模型的什么能力？",
+    "expected_keywords": ["robustness", "sample period", "evaluation method", "sample data", "business cycle", "adaptability"],
+    "expected_answer": "改变样本周期验证模型在不同市场环境下的适应性；改变评估方法（如MCS检验）验证统计显著性；改变样本数据（如NASDAQ）验证泛化能力；改变商业周期（扩张/衰退）验证模型在经济波动中的稳定性。",
     "category": "analysis",
+    "difficulty": "medium",
+    "tags": ["鲁棒性", "测试", "适应性"]
+  },
+  {
+    "question": "在GA-VMD-TCN的M-DM检验中，如果计算得到的M-DM统计量为负值且p值小于0.01，这说明了什么？结合假设检验，解释其统计意义。",
+    "expected_keywords": ["M-DM", "negative", "p-value", "H0", "H1", "forecast accuracy"],
+    "expected_answer": "负的M-DM统计量表明GA-VMD-TCN的预测误差（基于损失函数）显著小于对比模型。在p<0.01时，拒绝零假设（两模型精度相同），接受备择假设（GA-VMD-TCN预测能力更优），说明改进具有高度统计显著性。",
+    "category": "theory",
     "difficulty": "hard",
     "tags": ["M-DM检验", "统计显著性", "假设检验"]
   },
   {
-    "question": "Linformer模型提出的核心观察是什么？",
-    "expected_keywords": ["self-attention is low rank", "can be approximated by a low-rank matrix", "low rank"],
-    "expected_answer": "Linformer的核心观察是，Transformer中的自注意力矩阵（context mapping matrix）是低秩的，因此可以用一个低秩矩阵来近似。",
+    "question": "Linformer模型的核心思想是什么？它如何利用自注意力矩阵的低秩特性？",
+    "expected_keywords": ["low-rank", "self-attention", "approximate", "linear complexity"],
+    "expected_answer": "Linformer的核心思想是自注意力矩阵（context mapping matrix）是低秩的，可以用低秩矩阵近似，从而将自注意力的复杂度从O(n²)降到O(n)。",
     "category": "model",
     "difficulty": "easy",
-    "tags": ["Linformer", "低秩", "自注意力"]
+    "tags": ["Linformer", "低秩", "复杂度"]
   },
   {
-    "question": "Linformer模型将原始Transformer自注意力机制的复杂度从O(n²)降低到了多少？",
-    "expected_keywords": ["O(n)", "linear complexity"],
-    "expected_answer": "Linformer将自注意力机制的复杂度从O(n²)降低到了O(n)（线性的时间复杂度和空间复杂度）。",
-    "category": "model",
+    "question": "Linformer在推理时相比标准Transformer能节省多少内存？请举例说明（如n=512, k=128时）。",
+    "expected_keywords": ["memory saving", "batch size", "inference", "speedup"],
+    "expected_answer": "当n=512，k=128时，Linformer推理速度提升约1.5倍，并能支持更大的批处理大小（内存节省约1.7倍）。随着序列长度增加，节省更显著。",
+    "category": "performance",
     "difficulty": "easy",
-    "tags": ["复杂度", "效率", "线性"]
+    "tags": ["推理效率", "内存", "速度"]
   },
   {
-    "question": "Linformer通过添加两个线性投影矩阵E_i和F_i来降低计算复杂度，请说明这两个矩阵的作用以及它们如何实现复杂度降低。",
-    "expected_keywords": ["projection matrix", "n×k", "project", "key", "value"],
-    "expected_answer": "Linformer引入了两个线性投影矩阵E_i和F_i，其中E_i用于将原始的Key矩阵K从n×d投影到k×d，F_i用于将原始的值矩阵V从n×d投影到k×d。通过设置k远小于n，使得计算出的注意力矩阵P的维度从n×n变为n×k，从而将时间和空间复杂度从O(n²)降低到O(nk)，当k为常数时即O(n)。",
+    "question": "Linformer通过添加线性投影矩阵E和F来降低计算复杂度，请解释这两个矩阵的具体作用，以及它们如何影响Key和Value的维度。",
+    "expected_keywords": ["projection matrices", "E", "F", "key", "value", "dimension reduction"],
+    "expected_answer": "E矩阵将原始的Key矩阵从n×d投影到k×d，F矩阵将Value矩阵从n×d投影到k×d，其中k远小于n。这样注意力矩阵P从n×n变为n×k，从而降低复杂度到O(nk)。",
     "category": "model",
     "difficulty": "medium",
-    "tags": ["线性投影", "复杂度", "实现细节"]
+    "tags": ["线性投影", "复杂度", "实现"]
   },
   {
-    "question": "论文通过定理2（线性自注意力定理）证明，当投影维度k选择得当时，可以用线性自注意力近似原始自注意力。请阐述该定理中，k的选择与序列长度n和特征维度d的关系，并解释为什么这种选择能保证近似的有效性。",
-    "expected_keywords": ["Theorem 2", "Lindenstrauss", "JL lemma", "low rank", "approximat"],
-    "expected_answer": "定理2指出，k可以选择为min{Θ(9d log(d)/ε²), 5Θ(log(n)/ε²)}。但更关键的是，通过利用矩阵A（即QK^T）的秩最大为d这一性质，可以证明k的选择可以独立于序列长度n（即k = O(d/ε²)）。这一结论建立在低秩性质和分布式的Johnson-Lindenstrauss引理之上，该引理保证了在高维空间中随机投影能以高概率保持原始向量的距离（或内积），因此可以用低维空间近似高维空间的计算，从而在误差可控的范围内实现线性复杂度。",
+    "question": "Linformer论文中的定理2（线性自注意力定理）指出，当投影维度k选择为O(d/ε²)时，近似误差可控。为什么k可以独立于序列长度n？请从矩阵秩的角度解释。",
+    "expected_keywords": ["Theorem 2", "rank", "d", "independent of n", "Johnson-Lindenstrauss"],
+    "expected_answer": "因为矩阵A=QK^T的秩最大为d（特征维度），利用低秩性质和JL引理，k只需依赖于d和近似误差ε，而不依赖于序列长度n，因此k可以取常数，实现真正的线性复杂度。",
     "category": "theory",
     "difficulty": "hard",
-    "tags": ["定理证明", "Johnson-Lindenstrauss", "低秩近似", "理论基础"]
+    "tags": ["定理证明", "低秩", "JL引理"]
   },
   {
-    "question": "Mixture-of-Recursions (MoR) 模型主要统一了哪三个效率维度？",
-    "expected_keywords": ["parameter sharing", "adaptive computation", "KV caching", "recursion depth"],
-    "expected_answer": "MoR统一了参数效率（通过权重共享）、自适应计算（通过为每个token动态分配不同的递归深度）和内存效率（通过递归感知的KV缓存策略）三个维度。",
+    "question": "Linformer中通过参数共享（如层间共享投影矩阵）进一步减少了参数量。这种共享对模型性能有何影响？实验中最激进的共享方式（层间共享）效果如何？",
+    "expected_keywords": ["parameter sharing", "layerwise sharing", "performance", "perplexity"],
+    "expected_answer": "参数共享减少了额外参数，层间共享（所有层、所有头共用一组E和F）仍能保持与无共享相近的验证困惑度，说明投影矩阵可以在不同层间复用，几乎不损失性能，同时显著降低内存占用。",
+    "category": "analysis",
+    "difficulty": "medium",
+    "tags": ["参数共享", "性能", "效率"]
+  },
+  {
+    "question": "Mixture-of-Recursions (MoR) 模型通过哪三种机制同时提升参数效率、计算效率和内存效率？",
+    "expected_keywords": ["parameter sharing", "adaptive computation", "KV caching", "recursion"],
+    "expected_answer": "MoR通过权重共享（参数效率）、为每个token动态分配递归深度（自适应计算）以及递归感知的KV缓存（内存效率）三种机制统一提升效率。",
     "category": "model",
     "difficulty": "easy",
-    "tags": ["MoR", "效率", "维度"]
+    "tags": ["MoR", "效率", "机制"]
   },
   {
-    "question": "在MoR模型中，Token-choice路由和Expert-choice路由的核心区别是什么？",
-    "expected_keywords": ["token-choice", "expert-choice", "each layer", "routing strategy"],
-    "expected_answer": "Token-choice路由在每个token进入模型时，通过单次路由决策为其分配一个固定的递归深度，之后便按此路径计算；而Expert-choice路由在每个递归步骤中，都独立地选择哪些token继续进入下一层递归，实现了逐层动态筛选。",
+    "question": "在MoR中，Token-choice路由和Expert-choice路由在决策时机上有何不同？哪种路由更容易导致负载不均衡？",
+    "expected_keywords": ["Token-choice", "Expert-choice", "routing", "load imbalance"],
+    "expected_answer": "Token-choice路由在输入时一次性决定每个token的总递归步数；Expert-choice路由在每个递归层动态选择哪些token继续。Token-choice容易导致各专家（递归深度）负载不均衡，需要额外的平衡损失。",
     "category": "model",
     "difficulty": "easy",
-    "tags": ["路由策略", "Token-choice", "Expert-choice"]
+    "tags": ["路由策略", "负载均衡"]
   },
   {
-    "question": "请解释MoR模型中的“递归KV共享”策略是如何工作的，以及其主要优点是什么？",
-    "expected_keywords": ["KV sharing", "cache KV", "reuse", "prefill", "memory"],
-    "expected_answer": "递归KV共享策略只在第一次递归步骤时计算并缓存所有token的Key-Value对。在后续的递归步骤中，即使部分token被路由机制选择退出（不再进行计算），模型仍然可以复用第一次递归时缓存的完整KV对来进行注意力计算。其主要优点是能显著减少KV缓存的内存占用和IO开销，并在预填充阶段跳过后续递归的计算，从而降低推理延迟。",
+    "question": "请解释MoR中“递归KV共享”（Recursive KV Sharing）策略如何工作，以及它在推理阶段能带来什么好处？",
+    "expected_keywords": ["KV sharing", "cache reuse", "prefill", "memory reduction"],
+    "expected_answer": "递归KV共享只在第一次递归时计算并缓存所有token的KV对，后续递归直接复用这些缓存，无需重新计算。好处是减少KV缓存内存占用和IO开销，并在预填充阶段跳过后续递归的计算，降低推理延迟。",
     "category": "model",
     "difficulty": "medium",
-    "tags": ["KV缓存", "递归共享", "内存优化"]
+    "tags": ["KV缓存", "共享", "推理优化"]
   },
   {
-    "question": "论文中的实验结果显示，在IsoFLOP分析下，MoR模型相比普通Transformer和固定深度的递归Transformer，展现出不同的计算最优缩放行为。请分析MoR的缩放规律（更倾向于增加模型参数还是训练数据）并解释可能的原因。",
-    "expected_keywords": ["IsoFLOP", "scaling", "parameters", "throughput", "recursion depth"],
-    "expected_answer": "实验表明，MoR模型在计算最优缩放路径上的斜率更大（更接近零），意味着其性能提升更依赖于增加模型参数量而非训练数据量。可能的原因是，MoR模型的核心是共享的参数块，该参数块的能力是决定模型性能的关键瓶颈。通过增加模型规模（如`dim`, `n_layers`）来提升共享块的能力，其带来的收益边际效应远大于投入更多数据来“喂养”一个能力有限的核心块。因此，在计算预算固定时，MoR更适合采用“更大的模型，更短的训练步数”的缩放策略。",
+    "question": "MoR论文中的IsoFLOP分析表明，MoR的缩放规律更倾向于增加模型参数而非训练数据，请分析其原因。",
+    "expected_keywords": ["IsoFLOP", "scaling", "parameters", "data", "shared block"],
+    "expected_answer": "MoR的性能瓶颈在于共享参数块的能力，增加模型规模（如层宽、深度）能显著提升该块的表现，而增加训练数据对能力有限的共享块收益递减。因此，在固定计算预算下，MoR更偏向于增大模型而非训练更长。",
     "category": "analysis",
     "difficulty": "hard",
-    "tags": ["缩放定律", "IsoFLOP", "参数效率", "分析"]
+    "tags": ["缩放定律", "参数效率", "分析"]
   },
   {
-    "question": "4D LangSplat提出用来解决构建4D语言场时，传统视觉模型（如CLIP）存在的什么问题？",
-    "expected_keywords": ["temporal dynamic", "time-sensitive", "CLIP", "static", "4D"],
-    "expected_answer": "4D LangSplat旨在解决传统视觉模型（如CLIP）无法捕捉4D动态场景中随时间变化的语义信息的问题，从而无法处理时间敏感的开放词汇查询。",
-    "category": "model",
+    "question": "在MoR中，专家选择路由（Expert-choice）使用辅助损失（auxiliary loss）来避免信息泄露（causality violation）。请简述信息泄露是什么，以及辅助损失如何解决这个问题。",
+    "expected_keywords": ["information leakage", "auxiliary loss", "causality", "top-k selection"],
+    "expected_answer": "信息泄露指在训练时，专家通过查看未来token来决定top-k选择，违反自回归的因果性。辅助损失通过训练路由器输出接近二值（选择/不选择），使得推理时路由器能独立预测哪些token会被选中，从而避免依赖未来信息。",
+    "category": "theory",
+    "difficulty": "medium",
+    "tags": ["因果性", "辅助损失", "路由"]
+  },
+  {
+    "question": "4D LangSplat提出使用MLLM生成文本描述来替代CLIP特征作为监督信号，这样做的主要动机是什么？",
+    "expected_keywords": ["MLLM", "CLIP", "temporal dynamics", "video caption"],
+    "expected_answer": "CLIP无法捕捉视频中的时间动态语义（如状态变化、动作），而MLLM能生成描述物体随时间变化的文本，这些文本编码后可作为像素级监督，构建包含动态语义的4D语言场。",
+    "category": "motivation",
     "difficulty": "easy",
-    "tags": ["4D", "语言场", "动态语义"]
+    "tags": ["MLLM", "动态语义", "监督"]
   },
   {
-    "question": "为了生成训练4D语言场所需的像素级对齐的物体特征，4D LangSplat采用了什么创新方法？",
-    "expected_keywords": ["multimodal object-wise", "MLLM", "LLM", "sentence embed", "pixel-aligned"],
-    "expected_answer": "该方法不直接依赖现有的视觉特征提取器，而是利用多模态大语言模型(MLLM)结合视觉和文本提示，为视频中的每个物体生成高质量、时序一致的文本描述，然后使用LLM将这些描述编码成句子嵌入，作为监督信号来训练4D语言场。",
+    "question": "4D LangSplat如何处理时间敏感的查询（如“running dog”）？它结合了哪两个语义场来实现？",
+    "expected_keywords": ["time-sensitive", "time-agnostic field", "time-varying field", "query"],
+    "expected_answer": "先使用时序无关语义场获得空间掩码，再在掩码区域内用时序变化语义场计算与查询的相似度，通过阈值筛选出相关时间帧，最终结合空间掩码和时间帧得到结果。",
     "category": "method",
     "difficulty": "easy",
-    "tags": ["MLLM", "视频提示", "特征生成"]
+    "tags": ["时间敏感查询", "语义场"]
   },
   {
-    "question": "请解释4D LangSplat提出的“状态可变形网络”（Status Deformable Network）的工作原理和目的。",
-    "expected_keywords": ["Status Deformable", "smooth transition", "temporal consistency"],
-    "expected_answer": "状态可变形网络假设动态场景中每个高斯点的语义特征只在有限个预设的“状态”间平滑过渡。它将每个点在不同时间的语义特征表示为这些状态原型向量的线性组合（加权和）。网络通过一个MLP预测每个时间点的加权系数。这样做的目的是简化学习目标（从学习任意变化的特征变为学习有限状态的线性组合），强制特征随时间平滑变化，提高时序一致性和模型稳定性。",
+    "question": "4D LangSplat提出的“状态可变形网络”（Status Deformable Network）是如何限制语义特征的变化范围的？其设计意图是什么？",
+    "expected_keywords": ["state prototypes", "linear combination", "smooth transition", "temporal consistency"],
+    "expected_answer": "该网络将每个高斯点的语义特征表示为有限个状态原型向量的线性组合（加权和），通过MLP预测权重系数。意图是强制特征在有限状态间平滑过渡，降低学习复杂度，提高时序一致性。",
     "category": "model",
     "difficulty": "medium",
-    "tags": ["状态可变形网络", "平滑过渡", "时序一致性"]
+    "tags": ["状态可变形网络", "时序一致性"]
   },
   {
-    "question": "文章中提到，利用MLLM生成的嵌入直接进行零样本视频动作分类和时空定位，取得了与SOTA方法竞争的性能。这一方面验证了MLLM嵌入的时空编码能力，但另一方面也揭示了该方法的一个潜在局限性，请结合MLLM本身的特点分析这个局限性。",
-    "expected_keywords": ["limitation", "MLLM", "zero-shot", "spatio-temporal"],
-    "expected_answer": "这个实验证明了MLLM生成的文本描述中确实隐式地编码了丰富的时空信息。但其性能上限本质上受限于所使用的MLLM（如Qwen2-VL）的能力。如果MLLM对某个动作或场景理解有误（例如，产生幻觉或错误描述），那么基于此训练的4D语言场也会继承这个错误。此外，MLLM的训练数据可能带有偏见，导致对不同物体的描述质量不均衡。因此，该方法的泛化能力和上限与底层的MLLM强相关，这是其主要的局限性之一。",
+    "question": "4D LangSplat利用MLLM生成嵌入后，在零样本视频动作分类和时空定位任务上取得了竞争性结果。这是否意味着MLLM嵌入已充分编码时空信息？请分析其局限性。",
+    "expected_keywords": ["zero-shot", "MLLM", "limitation", "bias", "hallucination"],
+    "expected_answer": "是的，说明MLLM嵌入隐式编码了时空信息。但局限性在于性能受限于MLLM的能力，如果MLLM对场景理解有误（幻觉或偏见），则4D语言场也会继承错误，且泛化能力与MLLM训练数据密切相关。",
     "category": "analysis",
     "difficulty": "hard",
-    "tags": ["MLLM局限性", "性能瓶颈", "幻觉问题"]
+    "tags": ["MLLM局限性", "泛化"]
   },
   {
-    "question": "基于GA-LightGBM的量化策略的总收益率是多少？",
-    "expected_keywords": ["37.42%", "总收益率", "20.22%"],
-    "expected_answer": "总收益率为37.42%，年化收益率20.22%，夏普比率0.8729，最大回撤9.23%。",
+    "question": "在4D LangSplat中，多模态物体级视频提示（multimodal object-wise video prompting）具体包含哪些视觉提示技术？其目的是什么？",
+    "expected_keywords": ["visual prompt", "contour", "gray", "blur", "attention"],
+    "expected_answer": "包括用红色轮廓突出目标物体、将非目标区域转为灰度、对背景应用高斯模糊。目的是引导MLLM聚焦于特定物体，同时保留背景上下文以理解动作和状态。",
+    "category": "method",
+    "difficulty": "medium",
+    "tags": ["视觉提示", "MLLM", "注意力"]
+  },
+  {
+    "question": "基于GA-LightGBM的量化策略在回测期间的总收益率和年化收益率分别是多少？",
+    "expected_keywords": ["37.42%", "20.22%", "total return", "annualized return"],
+    "expected_answer": "总收益率为37.42%，年化收益率为20.22%。",
     "category": "result",
     "difficulty": "easy",
-    "tags": ["量化策略", "绩效"]
+    "tags": ["绩效", "收益率"]
   },
   {
-    "question": "为了克服输入特征“维度扩展”带来的“维度灾难”问题，该论文采用了什么特征选择方法？",
-    "expected_keywords": ["遗传算法", "GA", "特征选择", "包装器"],
-    "expected_answer": "论文构建了一个GA-LightGBM特征选择器，利用遗传算法的搜索能力和LightGBM模型的AUC值作为适应度函数，对扩展后的特征集进行特征降维。",
+    "question": "论文中构建的GA-LightGBM特征选择器，其适应度函数是基于什么指标？为什么要选择这个指标？",
+    "expected_keywords": ["AUC", "fitness", "LightGBM", "feature selection"],
+    "expected_answer": "适应度函数基于LightGBM模型的AUC值，因为AUC能全面评估二分类模型的排序能力，适合衡量特征子集对涨跌预测的有效性。",
     "category": "method",
     "difficulty": "easy",
-    "tags": ["特征选择", "GA", "降维"]
+    "tags": ["特征选择", "AUC", "适应度"]
   },
   {
-    "question": "请简要说明论文是如何结合贝叶斯优化（BO）和时序交叉验证来优化LightGBM模型超参数的，其目的是什么？",
-    "expected_keywords": ["贝叶斯优化", "时序交叉验证", "AUC", "超参数"],
-    "expected_answer": "该研究使用贝叶斯优化算法在LightGBM的超参数空间（如`learning_rate`, `num_leaves`等）中进行高效搜索。同时，为了保证时间序列数据不被未来信息污染，采用了时序交叉验证，即每次用过去的数据训练，用未来的数据验证。优化目标是在验证集上取得最高的平均AUC值，从而获得一组泛化能力最强、最适合时序预测的超参数。",
+    "question": "该论文如何结合贝叶斯优化（BO）和时序交叉验证来调整LightGBM的超参数？这样做的优势是什么？",
+    "expected_keywords": ["Bayesian optimization", "time series cross-validation", "hyperparameters", "overfitting"],
+    "expected_answer": "贝叶斯优化在超参数空间进行高效搜索，时序交叉验证保证训练集始终在验证集之前，避免未来信息泄露。优势是找到泛化能力强、适合时序预测的参数组合，防止过拟合。",
     "category": "model",
     "difficulty": "medium",
-    "tags": ["超参数优化", "贝叶斯优化", "时序交叉验证"]
+    "tags": ["超参数优化", "贝叶斯", "交叉验证"]
   },
   {
-    "question": "论文通过对股指期货收盘价序列进行ADF检验，确认了其非平稳性。随后采用了LightGBM等树模型进行预测。请分析：为什么像LightGBM这类基于树的集成模型相比传统的ARIMA等时序模型，更适合处理像股指期货价格这样的非平稳、高噪声的金融时间序列？",
-    "expected_keywords": ["ADF", "非平稳", "树模型", "非线性关系", "噪声"],
-    "expected_answer": "与ARIMA等传统计量模型不同，基于决策树的LightGBM模型不对数据的概率分布、平稳性等统计特性做任何严格假设。这使得它无需复杂的差分处理即可直接建模非平稳数据。其次，LightGBM天生擅长捕捉特征之间的非线性交互和复杂模式，并能通过GOSS等算法有效抵抗噪声和异常值的干扰。最后，它不依赖于像单位根检验那样对模型结构的主观判断，更适合金融市场价格变化无常、难以用简单线性或特定函数形式描述的本质。因此，在本场景下，LightGBM比传统时序模型更具优势。",
+    "question": "论文对股指期货收盘价进行了ADF检验，结果显示非平稳。为什么LightGBM这类树模型不需要数据平稳性假设，而ARIMA等传统模型则需要？",
+    "expected_keywords": ["ADF", "non-stationary", "tree-based", "ARIMA", "assumptions"],
+    "expected_answer": "ARIMA依赖数据的平稳性，需差分处理。树模型（如LightGBM）不对数据分布做假设，能自动捕捉非线性关系，对噪声和异常值鲁棒，无需预处理即可直接建模非平稳数据。",
     "category": "analysis",
     "difficulty": "hard",
-    "tags": ["模型对比", "非平稳性", "LightGBM优势", "金融时间序列"]
+    "tags": ["模型对比", "非平稳", "树模型优势"]
   },
   {
-    "question": "根据Happy-LLM教程，LLaMA2模型主要采用了哪种位置编码方式？",
-    "expected_keywords": ["旋转位置编码", "RoPE"],
-    "expected_answer": "LLaMA2模型主要采用了旋转位置编码（Rotary Position Embedding, RoPE）。",
+    "question": "在策略回测中，该论文设置了止损比例和止盈比例，其目的是什么？具体数值是多少？",
+    "expected_keywords": ["stop-loss", "take-profit", "risk management", "3%", "5%"],
+    "expected_answer": "止损3%、止盈5%是为了控制风险，限制最大亏损并锁定利润，避免在极端行情中承受过大损失。",
+    "category": "strategy",
+    "difficulty": "medium",
+    "tags": ["风险管理", "止损止盈"]
+  },
+  {
+    "question": "根据Happy-LLM教程，LLaMA2模型在注意力机制中使用了哪种位置编码方式？它与原始Transformer的Sinusoidal编码有何不同？",
+    "expected_keywords": ["RoPE", "rotary", "旋转位置编码", "Sinusoidal", "位置编码", "LLaMA2", "relative position"],
+    "expected_answer": "LLaMA2使用旋转位置编码（RoPE），它通过旋转矩阵将位置信息融入查询和键，能更好地建模相对位置，而原始Transformer使用固定的Sinusoidal绝对位置编码。",
     "category": "model",
     "difficulty": "easy",
-    "tags": ["位置编码", "LLaMA2", "RoPE"]
+    "tags": ["位置编码", "RoPE", "LLaMA2"]
   },
   {
-    "question": "在教程的LLM训练流程中，有监督微调（SFT）阶段与预训练（Pretrain）阶段，它们在计算损失（loss）时的一个关键区别是什么？",
-    "expected_keywords": ["SFT", "预训练", "loss", "指令", "IGNORE_TOKEN_ID"],
-    "expected_answer": "关键区别在于损失的计算范围。预训练阶段对输入序列的每个token都计算损失，旨在学习通用的语言知识。而在SFT阶段，为了训练模型遵循指令，仅对“回答”（即Assistant部分的输出）计算损失，而对“指令”（即User和System部分的输入）使用IGNORE_TOKEN_ID进行遮蔽，不参与梯度回传，确保模型专注于学习如何根据指令生成恰当回复。",
+    "question": "在教程的预训练（Pretrain）阶段，模型计算损失时是对整个序列的所有token都计算，而SFT阶段只计算回答部分的损失。为什么要这样设计？",
+    "expected_keywords": ["loss", "损失", "mask", "SFT", "预训练", "IGNORE_TOKEN_ID", "回答"],
+    "expected_answer": "预训练目的是学习通用的语言表示，所有token都有意义；SFT是为了让模型学习遵循指令，只需对Assistant回复部分计算损失，避免模型学习指令本身的模式，确保专注于生成答案。",
     "category": "training",
     "difficulty": "easy",
-    "tags": ["SFT", "预训练", "损失函数"]
+    "tags": ["SFT", "预训练", "损失掩码"]
   },
   {
-    "question": "教程详细讲解了三种主流的预训练模型架构：Encoder-Only (BERT)、Encoder-Decoder (T5) 和 Decoder-Only (GPT)。请以一个自然语言处理任务为例，说明这三种架构各自的优势和典型应用场景。",
-    "expected_keywords": ["Encoder-Only", "Encoder-Decoder", "Decoder-Only", "BERT", "GPT", "T5", "情感分类", "机器翻译"],
-    "expected_answer": "以“情感分类”任务为例，Encoder-Only架构（如BERT）能同时看到上文和下文（双向注意力），可以充分理解整个句子的语义，非常适合这种需要全面理解的任务。对于“机器翻译”，Encoder-Decoder架构（如T5）天然适配，Encoder负责理解源语言，Decoder负责生成目标语言。对于“文本续写”或“故事生成”任务，Decoder-Only架构（如GPT）因其因果语言模型（单向注意力）的特点，擅长根据已有上文预测下文，是文本生成任务的首选。",
+    "question": "教程介绍了三种主流预训练架构：Encoder-Only (BERT)、Encoder-Decoder (T5) 和 Decoder-Only (GPT)。请以文本摘要任务为例，说明哪种架构最合适，并解释原因。",
+    "expected_keywords": ["文本摘要", "Encoder", "Decoder", "T5", "BERT", "GPT", "预训练架构"],
+    "expected_answer": "文本摘要需要理解原文（编码）并生成简洁摘要（解码），Encoder-Decoder架构（如T5）最合适，因为Encoder负责理解，Decoder负责生成，天然适配seq2seq任务。",
     "category": "model",
     "difficulty": "medium",
-    "tags": ["模型架构", "应用场景", "BERT", "GPT", "T5"]
+    "tags": ["架构选择", "文本摘要", "T5"]
   },
   {
-    "question": "教程在LLM的训练中介绍了RLHF（人类反馈强化学习）阶段。请详细解释在RLHF中，训练奖励模型（Reward Model, RM）的数据形式和训练目标是什么？为什么通常对偏好进行排序而不是直接标注分数？",
-    "expected_keywords": ["RLHF", "奖励模型", "Reward Model", "chosen", "rejected", "PPO", "偏好"],
-    "expected_answer": "RM的训练数据通常是一个三元组：一个prompt（指令/问题）和两个回复（chosen和rejected），其中chosen是更符合人类偏好的回复，rejected则反之。训练目标不是让RM给单个回复输出一个绝对的分数，而是最大化它对chosen回复的评分与对rejected回复的评分之间的差距。采用排序而非直接标注分数的原因是：人类的审美和价值观是主观的，不同标注者对同一回复打出的绝对分数可能差异很大（例如，有人打8分，有人打7分）。但让他们比较两个回复哪个更好则容易达成一致。通过训练模型学习这种相对偏好排序，可以更稳定、更一致地学习到人类偏好，从而指导后续的PPO强化学习过程。",
+    "question": "在RLHF中，训练奖励模型（RM）时为什么要使用“chosen”和“rejected”成对数据，而不是直接给每个回复打分？这背后的考量是什么？",
+    "expected_keywords": ["chosen", "rejected", "RLHF", "奖励模型", "pairwise", "preference", "偏好"],
+    "expected_answer": "人类打分主观性强，不同标注者尺度不一；相对排序（哪个更好）更容易达成一致。通过最大化chosen和rejected的得分差异，RM能学习到更稳定的偏好信号，避免绝对分数带来的噪声。",
     "category": "theory",
     "difficulty": "hard",
-    "tags": ["RLHF", "奖励模型", "偏好学习", "训练目标"]
+    "tags": ["RLHF", "奖励模型", "偏好学习"]
+  },
+  {
+    "question": "教程中提到的DPO（直接偏好优化）是如何简化RLHF流程的？它为什么可以不需要单独的奖励模型和强化学习？",
+    "expected_keywords": ["DPO", "直接偏好优化", "RLHF", "PPO", "reward", "closed-form"],
+    "expected_answer": "DPO通过数学推导将RLHF的奖励最大化问题转化为监督学习，直接优化策略以符合偏好数据，从而避免训练单独的RM和进行PPO强化学习，大幅降低了训练复杂度和资源消耗。",
+    "category": "method",
+    "difficulty": "medium",
+    "tags": ["DPO", "RLHF简化", "监督学习"]
+  },
+    {
+    "question": "根据《中华人民共和国数据安全法》，数据安全是指什么？",
+    "expected_keywords": ["采取必要措施", "有效保护", "合法利用", "持续安全状态"],
+    "expected_answer": "数据安全是指通过采取必要措施，确保数据处于有效保护和合法利用的状态，以及具备保障持续安全状态的能力。",
+    "category": "definition",
+    "difficulty": "easy",
+    "tags": ["数据安全法", "定义"]
+  },
+  {
+    "question": "《数据安全法》中规定，国家建立什么制度来对数据进行分类分级保护？",
+    "expected_keywords": ["数据分类分级保护制度", "重要数据目录", "国家核心数据"],
+    "expected_answer": "国家建立数据分类分级保护制度，根据数据的重要程度和危害程度对数据实行分类分级保护，并制定重要数据目录。",
+    "category": "system",
+    "difficulty": "easy",
+    "tags": ["数据分类分级", "保护制度"]
+  },
+  {
+    "question": "根据《数据安全法》，重要数据的处理者应当定期开展什么活动，并向有关主管部门报送报告？报告应包括哪些内容？",
+    "expected_keywords": ["风险评估", "重要数据的种类和数量", "安全风险及应对措施"],
+    "expected_answer": "重要数据的处理者应当按照规定定期对其数据处理活动开展风险评估，并向有关主管部门报送风险评估报告。报告应包括重要数据的种类、数量，处理活动情况，面临的数据安全风险及其应对措施。",
+    "category": "obligation",
+    "difficulty": "medium",
+    "tags": ["重要数据", "风险评估", "报告义务"]
+  },
+  {
+    "question": "《数据安全法》对违反国家核心数据管理制度的行为规定了怎样的法律责任？",
+    "expected_keywords": ["二百万元以上一千万元以下罚款", "吊销营业执照", "刑事责任"],
+    "expected_answer": "违反国家核心数据管理制度，危害国家主权、安全和发展利益的，由有关主管部门处二百万元以上一千万元以下罚款，并根据情况责令暂停相关业务、停业整顿、吊销相关业务许可证或者吊销营业执照；构成犯罪的，依法追究刑事责任。",
+    "category": "legal",
+    "difficulty": "medium",
+    "tags": ["法律责任", "核心数据", "罚款"]
+  },
+  {
+    "question": "《数据安全法》第二十五条规定了数据出口管制制度，第二十六条规定了对等反制措施。请分析这两条制度如何共同构成中国在数据跨境流动领域的法律防线，并指出其适用条件和相互关系。",
+    "expected_keywords": ["出口管制", "对等反制", "维护国家安全", "歧视性措施", "国际义务"],
+    "expected_answer": "第二十五条对与维护国家安全和利益、履行国际义务相关的管制物项数据实施出口管制，属于主动性的防御措施；第二十六条则允许在外国对中国采取歧视性禁止或限制时实施对等反制，属于被动性的回应措施。两者共同构建了数据跨境流动的双重法律屏障，前者基于国家安全考量，后者基于国际对等原则。",
+    "category": "analysis",
+    "difficulty": "hard",
+    "tags": ["数据出境", "出口管制", "对等反制", "国家安全"]
+  },
+  {
+    "question": "根据论文，大型语言模型（LLM）通常指参数规模达到多少的Transformer语言模型？",
+    "expected_keywords": ["hundreds of billions", "175B", "540B", "GPT-3", "PaLM", "parameter", "billion", "large language model"],
+    "expected_answer": "大型语言模型通常指包含数百亿（或更多）参数的Transformer语言模型，例如GPT-3（175B参数）和PaLM（540B参数）。",
+    "category": "definition",
+    "difficulty": "easy",
+    "tags": ["LLM定义", "参数规模"]
+  },
+  {
+    "question": "论文中提到的LLM三大涌现能力是什么？",
+    "expected_keywords": ["emergent", "in-context learning", "instruction following", "chain-of-thought", "step-by-step", "ICL", "CoT", "emergence"],
+    "expected_answer": "三大涌现能力是：上下文学习（in-context learning）、指令遵循（instruction following）和逐步推理（step-by-step reasoning，即chain-of-thought prompting）。",
+    "category": "concept",
+    "difficulty": "easy",
+    "tags": ["涌现能力", "ICL", "CoT"]
+  },
+  {
+    "question": "论文介绍了KM缩放定律和Chinchilla缩放定律，请简述它们在对模型大小和训练数据规模的分配建议上有何主要分歧。",
+    "expected_keywords": ["KM scaling", "Chinchilla", "scaling law", "model size", "data size", "training tokens", "compute budget", "equal", "proportional"],
+    "expected_answer": "KM缩放定律（OpenAI）建议在计算预算增加时，应优先分配给模型大小；而Chinchilla缩放定律（DeepMind）主张模型大小和数据规模应按同等比例增加，两者在最优分配上存在分歧。",
+    "category": "comparison",
+    "difficulty": "medium",
+    "tags": ["缩放定律", "KM", "Chinchilla"]
+  },
+  {
+    "question": "论文中提到的RLHF（从人类反馈中强化学习）包含哪三个关键步骤？每个步骤的主要目标是什么？",
+    "expected_keywords": ["SFT", "supervised fine-tuning", "reward model", "RLHF", "PPO", "reinforcement learning", "human feedback", "KL penalty"],
+    "expected_answer": "RLHF包含三步：1）监督微调（SFT）——让模型初步学习期望行为；2）奖励模型训练——学习人类偏好，对模型输出打分；3）强化学习微调（通常使用PPO）——根据奖励模型优化LLM，同时加入KL惩罚以防止偏离原始模型。",
+    "category": "process",
+    "difficulty": "medium",
+    "tags": ["RLHF", "对齐", "PPO"]
+  },
+  {
+    "question": "论文指出指令微调（instruction tuning）和RLHF在优化LLM的行为上存在本质差异。请从优化目标、学习信号粒度、以及对模型能力（如幻觉）的影响三个维度，分析两者的区别，并说明为何RLHF在减少幻觉方面可能优于单纯指令微调。",
+    "expected_keywords": ["behavior cloning", "instruction tuning", "global optimization", "local optimization", "preference", "hallucination", "self-generated", "exploration", "SFT"],
+    "expected_answer": "指令微调（SFT）本质是行为克隆，采用局部优化（token级损失）模仿示范数据，容易因示范数据有限或标注者偏好差异导致幻觉；RLHF采用全局优化（文本级奖励），通过对比自生成响应的偏好来学习，鼓励探索更广策略空间，且奖励模型可基于人类偏好判断，有助于减少对错误示范的过拟合，从而更有效地抑制幻觉。",
+    "category": "analysis",
+    "difficulty": "hard",
+    "tags": ["SFT", "RLHF", "对齐", "幻觉"]
+  },
+  {
+    "question": "Docker的核心价值可以用哪句话概括？它主要解决了软件开发中的什么问题？",
+    "expected_keywords": ["一次构建", "到处运行", "环境一致性", "build once", "在我机器上", "works on my machine"],
+    "expected_answer": "Docker的核心价值是“一次构建，到处运行”，主要解决了软件开发中环境不一致的问题，即“在我机器上能跑”但别人机器上跑不起来的困境。",
+    "category": "concept",
+    "difficulty": "easy",
+    "tags": ["Docker", "核心价值"]
+  },
+  {
+    "question": "Docker镜像和容器之间的关系类似于面向对象编程中的什么概念？",
+    "expected_keywords": ["类", "实例", "Image", "Container"],
+    "expected_answer": "Docker镜像和容器的关系，类似于面向对象编程中的类和实例的关系——镜像是静态的定义，容器是镜像运行时的实体。",
+    "category": "concept",
+    "difficulty": "easy",
+    "tags": ["镜像", "容器", "类比"]
+  },
+  {
+    "question": "Dockerfile中的COPY和ADD指令有什么区别？在什么情况下应该优先使用COPY？",
+    "expected_keywords": ["COPY", "ADD", "自动解压tar", "URL下载", "推荐COPY"],
+    "expected_answer": "COPY只复制本地文件，ADD额外支持自动解压tar文件和从URL下载。除非需要自动解压功能，否则应优先使用COPY，因为其行为更明确、可预测，且更安全。",
+    "category": "dockerfile",
+    "difficulty": "medium",
+    "tags": ["COPY", "ADD", "Dockerfile指令"]
+  },
+  {
+    "question": "Docker容器与虚拟机在启动速度、资源占用和隔离级别上有哪些主要差异？",
+    "expected_keywords": ["秒级", "分钟级", "MB级别", "GB级别", "进程级隔离", "完全隔离"],
+    "expected_answer": "Docker容器启动速度为秒级，资源占用为MB级别，提供进程级隔离；虚拟机启动速度为分钟级，资源占用为GB级别，提供完全硬件隔离。",
+    "category": "comparison",
+    "difficulty": "medium",
+    "tags": ["容器vs虚拟机", "性能对比"]
+  },
+  {
+    "question": "Docker的底层实现依赖于Linux内核的三大核心技术。请分别解释Namespaces、Cgroups和UnionFS在容器中的作用，并说明它们如何共同构建容器运行环境。",
+    "expected_keywords": ["Namespaces", "Cgroups", "UnionFS", "资源隔离", "资源限制", "分层存储"],
+    "expected_answer": "Namespaces提供进程、网络、文件系统等资源的隔离；Cgroups限制CPU、内存等资源使用；UnionFS实现镜像的分层存储和写时复制。三者共同作用：Namespaces让容器看到独立环境，Cgroups防止资源耗尽，UnionFS实现轻量级镜像和快速启动。",
+    "category": "theory",
+    "difficulty": "hard",
+    "tags": ["底层实现", "Namespaces", "Cgroups", "UnionFS"]
+  },
+  {
+    "question": "在Pro Git中，Git的三种状态分别是什么？它们对应的三个主要工作区域是什么？",
+    "expected_keywords": ["已提交", "已修改", "已暂存", "committed", "modified", "staged", "Git", "工作区", "暂存区", "working directory", "git directory"],
+    "expected_answer": "Git的三种状态是已提交（committed）、已修改（modified）和已暂存（staged），对应的三个工作区域是Git目录（仓库）、工作区和暂存区（索引）。",
+    "category": "concept",
+    "difficulty": "easy",
+    "tags": ["Git状态", "工作区域"]
+  },
+  {
+    "question": "git clone和git init分别用于什么场景？克隆仓库时默认的远程仓库名称是什么？",
+    "expected_keywords": ["git clone", "git init", "克隆", "origin", "新仓库", "仓库"],
+    "expected_answer": "git init用于在本地目录初始化一个新的Git仓库；git clone用于从远程服务器克隆一个已存在的仓库。克隆时默认的远程仓库名称是origin。",
+    "category": "command",
+    "difficulty": "easy",
+    "tags": ["git clone", "git init", "origin"]
+  },
+  {
+    "question": "Git中merge和rebase都是整合分支的方式，请说明两者的主要区别以及各自适用的场景。",
+    "expected_keywords": ["merge", "rebase", "三方合并", "线性历史", "公共分支", "本地分支", "git merge", "变基"],
+    "expected_answer": "merge会创建一个新的合并提交，保留完整的分支历史；rebase将提交“重放”到目标分支上，产生线性历史。merge适合公共分支，rebase适合本地未推送的分支清理历史，且不应在公共分支上使用rebase。",
+    "category": "branch",
+    "difficulty": "medium",
+    "tags": ["merge", "rebase", "分支整合"]
+  },
+  {
+    "question": "什么是Git的“分离头指针”（detached HEAD）状态？在什么情况下会进入这种状态？如何解决？",
+    "expected_keywords": ["detached", "HEAD", "分离头指针", "detached HEAD", "git checkout", "新分支", "标签检出"],
+    "expected_answer": "分离头指针状态是指HEAD指向一个具体的提交而不是分支引用。在检出标签、历史提交或远程分支时会出现。解决方法是创建新分支（git checkout -b <branch>）来保存修改。",
+    "category": "command",
+    "difficulty": "medium",
+    "tags": ["detached HEAD", "HEAD引用"]
+  },
+  {
+    "question": "Git的reset命令有三个主要模式：--soft、--mixed和--hard。请分别解释这三种模式的作用，并说明在什么场景下应当谨慎使用--hard模式。",
+    "expected_keywords": ["git reset", "reset", "soft", "mixed", "hard", "HEAD", "索引", "工作目录"],
+    "expected_answer": "--soft仅移动HEAD指向，不改变索引和工作目录；--mixed（默认）移动HEAD并重置索引，保留工作目录；--hard移动HEAD、重置索引并强制覆盖工作目录。--hard会丢失未提交的修改，使用前需确认无需保留当前工作内容。",
+    "category": "theory",
+    "difficulty": "hard",
+    "tags": ["git reset", "--hard", "数据恢复"]
   }
 ]
