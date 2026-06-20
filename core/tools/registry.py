@@ -2,6 +2,7 @@
 
 from typing import Optional, Dict, Any, List
 from langchain_core.tools import BaseTool
+from langchain_core.utils.function_calling import convert_to_openai_function
 
 
 class ToolRegistry:
@@ -38,6 +39,17 @@ class ToolRegistry:
         if not self._tools:
             return "暂无可用工具"
         return "\n".join(f"- {t.name}: {t.description}" for t in self._tools.values())
+
+    def get_openai_tools(self) -> List[Dict[str, Any]]:
+        """生成 OpenAI 兼容的 Function Calling schema，传给 LLM API 的 tools 参数。
+
+        工具描述不再占用 prompt token，由 LLM 在 API 层面解析。
+        """
+        tools = []
+        for tool in self._tools.values():
+            func_def = convert_to_openai_function(tool)
+            tools.append({"type": "function", "function": func_def})
+        return tools
 
     def clear(self) -> None:
         self._tools.clear()

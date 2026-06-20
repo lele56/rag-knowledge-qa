@@ -1,7 +1,7 @@
 """Agent 核心逻辑单元测试"""
 
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
 
 from core.agent.types import AgentStep, StepType, AgentResult, AgentState
 from core.tools.registry import ToolRegistry
@@ -140,17 +140,33 @@ class TestToolRegistry:
         assert "search" in desc
         assert "搜索文档" in desc
 
+    def test_get_openai_tools(self):
+        """get_openai_tools 生成 OpenAI Function Calling 格式"""
+        from langchain_core.tools import tool as langchain_tool
+
+        @langchain_tool
+        def search(query: str) -> str:
+            """搜索文档"""
+            return "result"
+
+        registry = ToolRegistry()
+        registry.register(search)
+        tools = registry.get_openai_tools()
+        assert len(tools) == 1
+        assert tools[0]["type"] == "function"
+        assert tools[0]["function"]["name"] == "search"
+        assert "description" in tools[0]["function"]
+
 
 # ============================================================
-# ReActAgent 解析逻辑测试
+# ReActAgent Function Calling 测试
 # ============================================================
 
-class TestReactAgentParsing:
-    """测试 _parse_response / _parse_tool_call / _parse_finish"""
+class TestReactAgentFunctionCalling:
+    """测试 _build_system_prompt / _execute_tool / _run_loop (Function Calling)"""
 
     def _make_agent(self):
         from core.agent.base import ReActAgent
-        from abc import ABC
 
         class FakeAgent(ReActAgent):
             def _build_tools(self):
@@ -159,83 +175,135 @@ class TestReactAgentParsing:
         llm = MagicMock()
         return FakeAgent(llm=llm, max_steps=10)
 
-    def test_parse_response_standard(self):
+    def test_build_system_prompt_no_tools_placeholder(self):
+        """_build_system_prompt 不再需要 {tools} 占位符"""
         agent = self._make_agent()
-        text = "Thought: 需要搜索\nAction: rag_search[Transformer]"
-        thought, action = agent._parse_response(text)
-        assert thought == "需要搜索"
-        assert action == "rag_search[Transformer]"
+        prompt = agent._build_system_prompt("什么是 Transformer？")
+        assert "什么是 Transformer？" in prompt
+        assert "{tools}" not in prompt
 
-    def test_parse_response_multiline_thought(self):
+    def test_build_system_prompt_includes_history(self):
         agent = self._make_agent()
-        text = (
-            "Thought: 用户问了模型架构的问题。\n"
-            "需要先确定聚焦的文档。\n"
-            "Action: rag_search[模型架构]"
+        agent._history.append("Action: rag_search[{'query': 'Transformer'}]")
+        prompt = agent._build_system_prompt("什么是 Transformer？")
+        assert "rag_search" in prompt
+
+    def test_execute_tool_with_dict_args(self):
+        """Function Calling 传入 dict 参数"""
+        agent = self._make_agent()
+        mock_tool = MagicMock()
+        mock_tool.name = "test_tool"
+        mock_tool.invoke = MagicMock(return_value="工具返回结果")
+        agent.tool_registry.register(mock_tool)
+
+        result = agent._execute_tool("test_tool", {"query": "Transformer", "top_k": 8})
+        assert result == "工具返回结果"
+        mock_tool.invoke.assert_called_once_with({"query": "Transformer", "top_k": 8})
+
+    def test_execute_tool_with_string_args(self):
+        """兼容旧格式字符串参数"""
+        agent = self._make_agent()
+        mock_tool = MagicMock()
+        mock_tool.name = "test_tool"
+        mock_tool.invoke = MagicMock(return_value="done")
+        agent.tool_registry.register(mock_tool)
+
+        result = agent._execute_tool("test_tool", "hello")
+        assert result == "done"
+
+    def test_execute_tool_not_found(self):
+        agent = self._make_agent()
+        result = agent._execute_tool("nonexistent", "test")
+        assert "未找到" in result
+
+    def test_run_loop_with_tool_calls(self):
+        """模拟 LLM 返回 tool_calls 后正常走完流程"""
+        from langchain_core.messages import AIMessage
+        from langchain_core.tools import tool as langchain_tool
+
+        @langchain_tool
+        def rag_search(query: str, top_k: int = 8) -> str:
+            """搜索知识库"""
+            return "Transformer 是..."
+
+        agent = self._make_agent()
+        agent.tool_registry.register(rag_search)
+
+        call_1 = AIMessage(
+            content="",
+            tool_calls=[{"name": "rag_search", "args": {"query": "Transformer"}, "id": "call_1"}],
         )
-        thought, action = agent._parse_response(text)
-        assert "用户问了模型架构" in thought
-        assert action == "rag_search[模型架构]"
+        call_2 = AIMessage(content="基于搜索结果，Transformer 是一种神经网络架构。")
 
-    def test_parse_response_no_thought(self):
-        agent = self._make_agent()
-        text = "Action: Finish[答案是 42]"
-        thought, action = agent._parse_response(text)
-        assert thought is None
-        assert action == "Finish[答案是 42]"
+        call_count = [0]
 
-    def test_parse_response_no_action(self):
-        agent = self._make_agent()
-        text = "Thought: 思考中..."
-        thought, action = agent._parse_response(text)
-        assert thought == "思考中..."
-        assert action is None
+        async def mock_call(self, messages=None, tools=None, **kwargs):
+            if call_count[0] == 0:
+                call_count[0] += 1
+                return call_1
+            return call_2
 
-    def test_parse_tool_call_standard(self):
-        agent = self._make_agent()
-        name, inp = agent._parse_tool_call("rag_search[Transformer]")
-        assert name == "rag_search"
-        assert inp == "Transformer"
+        from core.agent.base import ReActAgent
+        with patch.object(ReActAgent, "_call_llm", mock_call):
+            async def gather():
+                steps = []
+                async for step in agent._run_loop("什么是 Transformer？"):
+                    steps.append(step)
+                return steps
+            import asyncio
+            steps = asyncio.run(gather())
 
-    def test_parse_tool_call_no_args(self):
-        agent = self._make_agent()
-        name, inp = agent._parse_tool_call("list_docs[]")
-        assert name == "list_docs"
-        assert inp == ""
+        assert len(steps) >= 3
+        assert any(s.type.value == "action" for s in steps)
+        assert any(s.type.value == "observation" for s in steps)
+        assert any(s.type.value == "finish" for s in steps)
 
-    def test_parse_tool_call_no_brackets(self):
-        agent = self._make_agent()
-        name, inp = agent._parse_tool_call("list_docs")
-        assert name == "list_docs"
-        assert inp == ""
+    def test_run_loop_rejects_premature_finish(self):
+        """未搜索就 Finish 应被拦截"""
+        from langchain_core.messages import AIMessage
 
-    def test_parse_tool_call_with_spaces(self):
         agent = self._make_agent()
-        # 工具名和 [ 之间不能有空格（这是 LLM 输出规范）
-        name, inp = agent._parse_tool_call("rag_search[hello world]")
-        assert name == "rag_search"
-        assert inp == "hello world"
+        call_1 = AIMessage(content="这是答案，不需要搜索。")
 
-    def test_parse_finish_standard(self):
-        agent = self._make_agent()
-        result = agent._parse_finish("Finish[这是最终答案。]")
-        assert result == "这是最终答案。"
+        async def mock_call(self, messages=None, tools=None, **kwargs):
+            return call_1
 
-    def test_parse_finish_multiline(self):
-        agent = self._make_agent()
-        result = agent._parse_finish("Finish[第一行\n第二行\n第三行]")
-        assert "第一行" in result
-        assert "第三行" in result
+        from core.agent.base import ReActAgent
+        with patch.object(ReActAgent, "_call_llm", mock_call):
+            async def gather():
+                steps = []
+                async for step in agent._run_loop("问题"):
+                    steps.append(step)
+                return steps
+            import asyncio
+            steps = asyncio.run(gather())
 
-    def test_parse_finish_unclosed(self):
-        agent = self._make_agent()
-        result = agent._parse_finish("Finish[答案被截断了")
-        assert result == "答案被截断了"
+        assert any("拒绝" in s.content for s in steps)
 
-    def test_parse_finish_no_brackets(self):
+    def test_run_loop_max_steps(self):
+        """达到最大步数应终止"""
+        from langchain_core.messages import AIMessage
+
         agent = self._make_agent()
-        result = agent._parse_finish("答案")
-        assert result == "答案"
+        agent.max_steps = 2
+
+        async def mock_call(self, messages=None, tools=None, **kwargs):
+            return AIMessage(
+                content="",
+                tool_calls=[{"name": "rag_search", "args": {"query": "test"}, "id": "call_x"}],
+            )
+
+        from core.agent.base import ReActAgent
+        with patch.object(ReActAgent, "_call_llm", mock_call):
+            async def gather():
+                steps = []
+                async for step in agent._run_loop("问题"):
+                    steps.append(step)
+                return steps
+            import asyncio
+            steps = asyncio.run(gather())
+
+        assert len(steps) >= 2
 
 
 # ============================================================

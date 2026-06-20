@@ -17,20 +17,23 @@ class TestAgentIntegration:
         return _fn
 
     def test_full_loop_minimal(self, retriever_fn):
-        """模拟最简单的 ReAct 循环：搜索 → 回答"""
+        """模拟最简单的 ReAct 循环：搜索 → 回答（Function Calling 版）"""
         from core.agent.rag_agent import RAGAgent
         from langchain_core.messages import AIMessage
 
         responses = [
-            AIMessage(content="Thought: 需要搜索\nAction: rag_search[Transformer]"),
-            AIMessage(content="Thought: 信息已足够\nAction: Finish[Transformer 是一种神经网络架构。]"),
+            AIMessage(
+                content="",
+                tool_calls=[{"name": "rag_search", "args": {"query": "Transformer"}, "id": "call_1"}],
+            ),
+            AIMessage(content="Transformer 是一种神经网络架构。"),
         ]
         call_count = [0]
 
-        async def mock_call(self, prompt, **kwargs):
+        async def mock_call(self, messages=None, tools=None, **kwargs):
             idx = call_count[0]
             call_count[0] += 1
-            return responses[idx].content
+            return responses[idx]
 
         with patch("core.agent.base.ReActAgent._call_llm", mock_call):
             agent = RAGAgent(llm=MagicMock(), max_steps=10)
@@ -45,16 +48,22 @@ class TestAgentIntegration:
         from langchain_core.messages import AIMessage
 
         responses = [
-            AIMessage(content="Thought: 先聚焦文档\nAction: doc_focus[paper.pdf]"),
-            AIMessage(content="Thought: 搜索\nAction: rag_search[结论]"),
-            AIMessage(content="Thought: 完成\nAction: Finish[这篇论文的结论是...]"),
+            AIMessage(
+                content="",
+                tool_calls=[{"name": "doc_focus", "args": {"document_name": "paper.pdf"}, "id": "call_1"}],
+            ),
+            AIMessage(
+                content="",
+                tool_calls=[{"name": "rag_search", "args": {"query": "结论"}, "id": "call_2"}],
+            ),
+            AIMessage(content="这篇论文的结论是..."),
         ]
         call_count = [0]
 
-        async def mock_call(self, prompt, **kwargs):
+        async def mock_call(self, messages=None, tools=None, **kwargs):
             idx = call_count[0]
             call_count[0] += 1
-            return responses[idx].content
+            return responses[idx]
 
         with patch("core.agent.base.ReActAgent._call_llm", mock_call):
             agent = RAGAgent(llm=MagicMock(), max_steps=10)
@@ -68,8 +77,11 @@ class TestAgentIntegration:
         from core.agent.rag_agent import RAGAgent
         from langchain_core.messages import AIMessage
 
-        async def mock_call(self, prompt, **kwargs):
-            return "Thought: 思考中...\nAction: rag_search[test]"
+        async def mock_call(self, messages=None, tools=None, **kwargs):
+            return AIMessage(
+                content="",
+                tool_calls=[{"name": "rag_search", "args": {"query": "test"}, "id": "call_x"}],
+            )
 
         with patch("core.agent.base.ReActAgent._call_llm", mock_call):
             agent = RAGAgent(llm=MagicMock(), max_steps=2)
@@ -84,17 +96,23 @@ class TestAgentIntegration:
         from langchain_core.messages import AIMessage
 
         responses = [
-            AIMessage(content="Thought: 查看文档\nAction: list_docs[]"),
-            AIMessage(content="Thought: 有文档了\nAction: Finish[有 doc1, doc2, doc3]"),
-            AIMessage(content="Thought: 搜索\nAction: rag_search[内容]"),
-            AIMessage(content="Thought: 完成\nAction: Finish[文档内容...]"),
+            AIMessage(
+                content="",
+                tool_calls=[{"name": "list_docs", "args": {}, "id": "call_1"}],
+            ),
+            AIMessage(content="有 doc1, doc2, doc3"),
+            AIMessage(
+                content="",
+                tool_calls=[{"name": "rag_search", "args": {"query": "内容"}, "id": "call_2"}],
+            ),
+            AIMessage(content="文档内容..."),
         ]
         call_count = [0]
 
-        async def mock_call(self, prompt, **kwargs):
+        async def mock_call(self, messages=None, tools=None, **kwargs):
             idx = call_count[0]
             call_count[0] += 1
-            return responses[idx].content
+            return responses[idx]
 
         with patch("core.agent.base.ReActAgent._call_llm", mock_call):
             agent = RAGAgent(llm=MagicMock(), max_steps=10)
@@ -144,13 +162,11 @@ class TestConfigIntegration:
     def test_prompts_format(self):
         from config.prompts import RAG_AGENT_PROMPT
         formatted = RAG_AGENT_PROMPT.format(
-            tools="rag_search: 搜索",
             state_info="无聚焦",
             chat_history="无历史",
             question="测试问题",
             history="无历史",
         )
-        assert "rag_search" in formatted
         assert "测试问题" in formatted
         assert "无聚焦" in formatted
 

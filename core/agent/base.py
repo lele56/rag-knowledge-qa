@@ -1,5 +1,5 @@
 """
-ReAct Agent 基类 — 思考 + 行动
+ReAct Agent 基类 — 思考 + 行动（Native Function Calling 版）
 
 借鉴 HelloAgents 的 ReActAgent 设计，提供：
 - 思考 → 行动 → 观察 循环
@@ -7,15 +7,17 @@ ReAct Agent 基类 — 思考 + 行动
 - 可配置最大步数
 - 完整的执行追踪（AgentStep）
 - 同步/异步双模式
+- 原生 Function Calling（工具描述不占 prompt token）
 
 子类只需实现 _build_tools() 和 _get_system_prompt()
 """
 import re
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Optional, List, Tuple, AsyncIterator
+from typing import Optional, List, AsyncIterator
 
 from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
 
 from core.tools import ToolRegistry
 from core.agent.types import AgentState, StepType, AgentStep, AgentResult
@@ -112,61 +114,77 @@ class ReActAgent(ABC):
     # ================================================================
 
     async def _run_loop(self, question: str, **kwargs) -> AsyncIterator[AgentStep]:
-        """ReAct 主循环：思考 → 解析 → 行动 → 观察，直到 Finish 或超步数"""
+        """ReAct 主循环（Native Function Calling）：LLM 通过 tool_calls 调用工具，直到给出纯文本回答或超步数"""
+        tools = self.tool_registry.get_openai_tools()
+
+        messages: list = [
+            SystemMessage(content=self._build_system_prompt(question)),
+        ]
+
+        chat_history = self._get_chat_history()
+        if chat_history and chat_history != "（暂无对话历史）":
+            messages.append(HumanMessage(content=f"对话历史：\n{chat_history}"))
+
+        messages.append(HumanMessage(content=question))
+
         for step_no in range(1, self.max_steps + 1):
-            # ① 构建 prompt
-            prompt = self._build_prompt(question)
             self._state = AgentState.THINKING
 
-            # ② 调用 LLM
-            response = await self._call_llm(prompt, **kwargs)
+            response = await self._call_llm(messages=messages, tools=tools, **kwargs)
             if not response:
                 logger.error(f"[{self.name}] LLM 返回空响应")
                 break
 
-            # ③ 解析 Thought + Action
-            thought, action = self._parse_response(response)
-            if thought:
-                yield self._add_step(StepType.THOUGHT, thought)
-            if not action:
-                logger.warning(f"[{self.name}] 未能解析 Action，流程终止")
-                break
+            content = response.content if hasattr(response, 'content') else ""
+            tool_calls = getattr(response, 'tool_calls', None) or []
 
-            # ④ 检查是否 Finish
-            if action.startswith("Finish"):
+            if tool_calls:
+                messages.append(response)
+
+                for tc in tool_calls:
+                    tool_name = tc.get("name", "")
+                    tool_args = tc.get("args", {})
+
+                    self._history.append(f"Action: {tool_name}[{tool_args}]")
+                    yield self._add_step(StepType.ACTION, "", tool_name, str(tool_args))
+
+                    observation = self._execute_tool(tool_name, tool_args)
+                    self._history.append(f"Observation: {observation}")
+                    yield self._add_step(StepType.OBSERVATION, observation, tool_result=observation)
+
+                    messages.append(ToolMessage(
+                        content=str(observation),
+                        tool_call_id=tc.get("id", ""),
+                    ))
+
+                if step_no >= 4 and self._has_retrieved():
+                    messages.append(HumanMessage(
+                        content="⚠️ 【强制收尾】已达步数限制！你已检索到足够内容，"
+                                "下一轮必须直接给出答案，禁止任何其他操作！"
+                    ))
+            else:
                 if self._should_reject_finish():
                     self._history.append(
                         "⚠️ 系统拒绝: 你还没有搜索文档内容！请立即执行以下步骤:\n"
                         "1. 从 list_docs 结果中选一个最可能的文档\n"
-                        "2. 调用 rag_search[查询词] 搜索内容\n"
-                        "3. 搜索到内容后再 Finish"
+                        "2. 调用 rag_search 搜索内容\n"
+                        "3. 搜索到内容后再回答"
                     )
+                    messages.append(HumanMessage(
+                        content="⚠️ 你还没有搜索文档内容！请先调用 rag_search 搜索知识库，不要直接回答。"
+                    ))
+                    yield self._add_step(StepType.THOUGHT, "（系统拒绝：未搜索即回答，要求重新搜索）")
                     continue
-                final_answer = self._parse_finish(action)
+
+                final_answer = content.strip()
+                if not final_answer:
+                    logger.warning(f"[{self.name}] 空内容，流程终止")
+                    break
+
                 self._state = AgentState.FINISHED
                 yield self._add_step(StepType.FINISH, final_answer)
                 logger.info(f"🎉 [{self.name}] 完成: {final_answer[:80]}...")
                 return
-
-            # ⑤ 执行工具
-            self._state = AgentState.ACTING
-            tool_name, tool_input = self._parse_tool_call(action)
-            if tool_name:
-                yield self._add_step(StepType.ACTION, "", tool_name, tool_input)
-                observation = self._execute_tool(tool_name, tool_input)
-                yield self._add_step(StepType.OBSERVATION, observation, tool_result=observation)
-                self._history.append(f"Action: {tool_name}[{tool_input}]")
-                self._history.append(f"Observation: {observation}")
-            else:
-                logger.warning(f"  [{self.name}] 无法解析 Action: '{action}'")
-                self._history.append(f"Observation: 无法解析 Action 格式 '{action}'，请使用 '工具名[参数]' 格式")
-
-            # ⑥ 第 4 步后若已检索到内容，注入强制收尾提示
-            if step_no >= 4 and self._has_retrieved():
-                self._history.append(
-                    "⚠️ 【强制收尾】已达步数限制！你已检索到足够内容，"
-                    "下一轮必须直接用 Finish 给出答案，禁止任何其他操作！"
-                )
 
         logger.warning(f"⏰ [{self.name}] 达到最大步数 {self.max_steps}")
 
@@ -198,13 +216,11 @@ class ReActAgent(ABC):
         logger.info(f"  [{self.name}] {step.to_log()}")
         return step
 
-    def _build_prompt(self, question: str) -> str:
-        tools_desc = self.tool_registry.get_descriptions()
+    def _build_system_prompt(self, question: str) -> str:
         history_str = "\n".join(self._history) if self._history else "（无历史记录）"
         state_info = self._get_state_info()
         chat_history = self._get_chat_history()
         return self.prompt_template.format(
-            tools=tools_desc,
             question=question,
             history=history_str,
             state_info=state_info,
@@ -230,47 +246,28 @@ class ReActAgent(ABC):
                 return True
         return False
 
-    async def _call_llm(self, prompt: str, **kwargs) -> str:
+    async def _call_llm(self, prompt: str = None, messages: list = None, tools: list = None, **kwargs):
+        """调用 LLM。支持字符串 prompt（兼容旧接口）和 messages + tools（Function Calling）。"""
         try:
+            if messages is not None:
+                from core.llm import call_llm_messages_with_retry
+                return await call_llm_messages_with_retry(messages, tools=tools)
             from core.llm import call_llm_with_retry
             return await call_llm_with_retry(prompt)
         except Exception as e:
             logger.error(f"LLM 调用失败: {e}")
-            return ""
+            return None
 
-    def _parse_response(self, text: str) -> Tuple[Optional[str], Optional[str]]:
-        thought = re.search(r"Thought:\s*(.*?)(?=\nAction:|\Z)", text, re.DOTALL)
-        action = re.search(r"Action:\s*(.*)", text, re.DOTALL)
-        t = thought.group(1).strip() if thought else None
-        a = action.group(1).strip() if action else None
-        return t, a
-
-    def _parse_tool_call(self, action_text: str) -> Tuple[Optional[str], Optional[str]]:
-        """解析工具调用：支持 工具名[参数]、工具名[]、工具名 三种写法"""
-        action_text = action_text.strip()
-        m = re.match(r"(\w+)\[(.*)\]", action_text)
-        if m:
-            return m.group(1), m.group(2).strip() or ""
-        m = re.match(r"(\w+)$", action_text)
-        if m:
-            return m.group(1), ""
-        return None, None
-
-    def _parse_finish(self, action_text: str) -> str:
-        """解析 Finish[最终答案]，兼容未闭合括号的情况"""
-        m = re.match(r"Finish\[(.*)\]", action_text, re.DOTALL)
-        if m:
-            return m.group(1).strip()
-        if action_text.startswith("Finish["):
-            return action_text[7:].strip()
-        return action_text.strip()
-
-    def _execute_tool(self, tool_name: str, tool_input: str) -> str:
+    def _execute_tool(self, tool_name: str, tool_input) -> str:
+        """执行工具。支持字符串参数（旧格式）和字典参数（Function Calling JSON）。"""
         try:
             tool = self.tool_registry.get(tool_name)
             if tool is None:
                 return f"错误: 未找到工具 '{tool_name}'"
-            return str(tool.invoke({"query": tool_input, "input": tool_input, "document_name": tool_input}))
+            if isinstance(tool_input, str):
+                return str(tool.invoke({"query": tool_input, "input": tool_input, "document_name": tool_input}))
+            else:
+                return str(tool.invoke(tool_input))
         except Exception as e:
             return f"工具执行失败: {e}"
 
