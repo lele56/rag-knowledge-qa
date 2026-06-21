@@ -29,6 +29,7 @@ from core.tools.rag_tools import (
     list_docs,
     memory_recall,
     memory_save,
+    graph_query,
     set_tool_deps,
 )
 from core.context_builder import ContextBuilder, ContextConfig
@@ -62,6 +63,7 @@ class RAGAgent(ReActAgent):
         tool_registry.register(list_docs)
         tool_registry.register(memory_recall)
         tool_registry.register(memory_save)
+        tool_registry.register(graph_query)
 
         super().__init__(
             llm=llm,
@@ -124,6 +126,16 @@ class RAGAgent(ReActAgent):
         """注入记忆管理器"""
         self._memory_manager = memory_manager
         set_tool_deps(memory_manager=memory_manager)
+        return self
+
+    def attach_graph(self, graph_chain) -> "RAGAgent":
+        """注入知识图谱链（供 Agent 的 graph_query 工具调用）"""
+        set_tool_deps(graph_chain=graph_chain)
+        return self
+
+    def attach_focus(self, focus_callback: Callable[[str], str]) -> "RAGAgent":
+        """注入文档聚焦回调"""
+        set_tool_deps(focus_callback=focus_callback)
         return self
 
     def attach_doc_list(self, list_callback: Callable[[], List[str]]) -> "RAGAgent":

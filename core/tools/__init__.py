@@ -10,6 +10,7 @@ from .rag_tools import (
     list_docs,
     memory_recall,
     memory_save,
+    graph_query,
     set_tool_deps,
 )
 
@@ -26,5 +27,6 @@ __all__ = [
     "list_docs",
     "memory_recall",
     "memory_save",
+    "graph_query",
     "set_tool_deps",
 ]

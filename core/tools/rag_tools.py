@@ -1,12 +1,12 @@
-"""
-RAG 专用工具 — 使用 LangChain @tool 装饰器自动生成 schema
+"""RAG 专用工具 — 使用 LangChain @tool 装饰器自动生成 schema
 
 工具列表:
-- rag_search:   知识库检索
-- doc_focus:    聚焦/切换文档
-- list_docs:    列出已上传文档
+- rag_search:    知识库检索
+- doc_focus:     聚焦/切换文档
+- list_docs:     列出已上传文档
 - memory_recall: 回忆长期记忆
-- memory_save:  保存到长期记忆
+- memory_save:   保存到长期记忆
+- graph_query:   知识图谱查询
 """
 
 from typing import Optional, Callable
@@ -18,6 +18,7 @@ _source_filter: Optional[Callable] = None
 _focus_callback: Optional[Callable] = None
 _list_callback: Optional[Callable] = None
 _memory_manager = None
+_graph_chain = None
 _SENTINEL = object()
 
 
@@ -27,9 +28,10 @@ def set_tool_deps(
     focus_callback=_SENTINEL,
     list_callback=_SENTINEL,
     memory_manager=_SENTINEL,
+    graph_chain=_SENTINEL,
 ):
     """注入工具依赖（由 Agent 初始化时调用，传 None 可清除对应依赖）"""
-    global _retriever_fn, _source_filter, _focus_callback, _list_callback, _memory_manager
+    global _retriever_fn, _source_filter, _focus_callback, _list_callback, _memory_manager, _graph_chain
     if retriever_fn is not _SENTINEL:
         _retriever_fn = retriever_fn
     if source_filter is not _SENTINEL:
@@ -40,6 +42,8 @@ def set_tool_deps(
         _list_callback = list_callback
     if memory_manager is not _SENTINEL:
         _memory_manager = memory_manager
+    if graph_chain is not _SENTINEL:
+        _graph_chain = graph_chain
 
 
 @tool
@@ -165,3 +169,22 @@ def memory_save(content: str) -> str:
         return f"已保存: {content[:100]}"
     except Exception as e:
         return f"保存失败: {e}"
+
+
+@tool
+def graph_query(query: str) -> str:
+    """查询知识图谱中的概念关系。适用场景：概念之间的关联、归属、组成、依赖关系。
+
+    Args:
+        query: 关系查询（如 'Transformer和BERT的关系'、'PSO属于哪类算法'）
+    """
+    if _graph_chain is None:
+        return "知识图谱未连接，请检查 Neo4j 配置"
+
+    try:
+        result = _graph_chain.run(query)
+        if not result or "未找到" in str(result):
+            return "图谱中未找到相关信息"
+        return str(result)
+    except Exception as e:
+        return f"图谱查询失败: {e}"

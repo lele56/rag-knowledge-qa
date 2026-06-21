@@ -1,12 +1,38 @@
 """QA 服务 — 使用 RAGAgent 的 ReAct 模式问答"""
 
 import asyncio
-from typing import Dict, Any
+from typing import Dict, Any, List
 from config.settings import settings
+from config.prompts import GRAPH_INTENT_PROMPT
 from utils.cache import AsyncTTLCache
 from utils.logger import logger
 from core.agent.rag_agent import get_rag_agent, RAGAgent
+from core.llm import get_llm
 from chains.graph_chain import get_graph_chain
+
+
+async def _should_use_graph(question: str) -> bool:
+    """用 LLM 判断用户意图是否需要图谱查询"""
+    try:
+        llm = get_llm()
+        prompt = GRAPH_INTENT_PROMPT.format(question=question)
+        resp = await llm.ainvoke(prompt)
+        content = resp.content.strip().upper() if hasattr(resp, 'content') else str(resp).strip().upper()
+        return "YES" in content
+    except Exception as e:
+        logger.warning(f"图谱意图判断失败: {e}")
+        return False
+
+
+def _should_auto_store_semantic(question: str, answer: str) -> bool:
+    """判断是否应自动存入语义记忆（Neo4j）"""
+    if not settings.LS_ENABLED:
+        return False
+    if len(answer) < 200:
+        return False
+    from core.memory_system.semantic import _extract_concepts
+    concepts = _extract_concepts(f"{question} {answer}")
+    return len(concepts) >= 2
 
 
 class QAService:
@@ -21,13 +47,13 @@ class QAService:
     def __init__(self):
         self.agent: RAGAgent = get_rag_agent()
         self.graph = get_graph_chain()
+        self.agent.attach_graph(self.graph)
         self.cache = (
             AsyncTTLCache(settings.CACHE_TTL_SECONDS, settings.CACHE_MAX_SIZE)
             if settings.CACHE_ENABLED else None
         )
 
     async def ask(self, question: str) -> Dict[str, Any]:
-        # 缓存
         if self.cache:
             cached = await self.cache.get(question)
             if cached:
@@ -35,19 +61,27 @@ class QAService:
                 return cached
 
         try:
-            # ReAct Agent 执行
             result = await self.agent.aask(question)
             answer = result.answer
-            sources = result.sources
+            sources = result.sources or []
 
-            # 知识图谱增强
-            if any(kw in question for kw in ["关系", "依赖", "组成", "属于", "连接", "影响"]):
+            # 图谱增强：LLM 判断意图，而非关键词匹配
+            if await _should_use_graph(question):
                 try:
                     graph_ans = await asyncio.to_thread(self.graph.run, question)
-                    if graph_ans and "未找到" not in graph_ans:
+                    if graph_ans and "未找到" not in str(graph_ans):
                         answer += f"\n\n【知识图谱】{graph_ans}"
                 except Exception as e:
                     logger.warning(f"Graph failed: {e}")
+
+            # 自动存入语义记忆（满足条件时）
+            if _should_auto_store_semantic(question, answer):
+                try:
+                    from core.memory_system.semantic import store_semantic
+                    store_semantic(question, answer)
+                    logger.info(f"语义记忆自动存入: {question[:40]}")
+                except Exception as e:
+                    logger.warning(f"语义记忆自动存入失败: {e}")
 
             resp = {
                 "question": question,
