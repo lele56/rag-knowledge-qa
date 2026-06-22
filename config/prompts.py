@@ -1,3 +1,4 @@
+﻿# config/prompts.py
 """集中管理所有 Prompt 模板。
 
   约定：

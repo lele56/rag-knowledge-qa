@@ -1,3 +1,4 @@
+﻿# core/context/strategies.py
 """
 上下文策略 — 不同场景使用不同的上下文构建方式
 

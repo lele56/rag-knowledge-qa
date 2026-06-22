@@ -1,7 +1,7 @@
-import sys
+﻿import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
-from core.graph_store import get_graph
+from core.infrastructure.graph_store import get_graph
 from utils.logger import logger
 
 def main():

@@ -1,3 +1,4 @@
+﻿# core/memory_system/scoring.py
 """三层记忆的评分公式（完全按你给的公式实现）。"""
 import time
 from datetime import datetime, timedelta

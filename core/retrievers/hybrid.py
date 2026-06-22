@@ -1,4 +1,4 @@
-# core/retrievers/hybrid.py
+﻿# core/retrievers/hybrid.py
 """混合检索：向量搜索 (MMR) + BM25 关键词 → 合并去重 → CrossEncoder 重排序
 
 两阶段检索（无 source_filter 时）：
@@ -14,8 +14,8 @@ from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 
 from utils.logger import logger
 from config.settings import settings
-from core.vector_store import _get_client
-from core.embeddings import get_embeddings
+from core.infrastructure.vector_store import _get_client
+from core.infrastructure.embeddings import get_embeddings
 from core.retrievers.enhanced import scored_point_to_doc, denoise_docs, enrich_with_context
 
 _STATE = "_hr_int_state_v1"
@@ -328,11 +328,20 @@ class HybridRetriever(BaseRetriever):
             return self._heuristic_sort(merged, top_k)
 
     def _get_relevant_documents(self, query: str, **kwargs) -> List[Document]:
+        if self._try_cache_hit(query):
+            return self._try_cache_hit(query)
+
         is_focused = bool(self._s.python_filter)
 
         if not is_focused:
-            return self._two_stage_retrieve(query)
+            docs = self._two_stage_retrieve(query)
+        else:
+            docs = self._focused_retrieve(query)
 
+        self._cache_retrieval_result(query, docs)
+        return docs
+
+    def _focused_retrieve(self, query: str) -> List[Document]:
         vector_docs = self._s.vector_retriever.invoke(query)
         bm25_retriever = self._s.bm25_retriever
         bm25_docs = bm25_retriever.invoke(query) if bm25_retriever else []
@@ -341,3 +350,67 @@ class HybridRetriever(BaseRetriever):
         vector_docs = self._apply_python_filter(vector_docs)
         bm25_docs = self._apply_python_filter(bm25_docs)
         return self._merge_rerank(query, vector_docs, bm25_docs)
+
+    def _cache_key(self, query: str) -> str:
+        import hashlib
+        pf = self._s.python_filter
+        filter_str = ",".join(sorted(pf)) if pf else ""
+        raw = f"ret:{query}|{filter_str}"
+        return f"ret:{hashlib.md5(raw.encode()).hexdigest()}"
+
+    def _try_cache_hit(self, query: str) -> Optional[List[Document]]:
+        import asyncio
+        loop = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
+
+        if loop is None:
+            return None
+
+        import json
+        from utils.redis_client import get_redis
+
+        async def _hit():
+            redis = await get_redis()
+            if redis is None:
+                return None
+            key = self._cache_key(query)
+            val = await redis.get(key)
+            if val is None:
+                return None
+            try:
+                data = json.loads(val)
+                from langchain_core.documents import Document
+                logger.info(f"检索缓存命中: {query[:40]}")
+                return [Document(**d) for d in data]
+            except Exception:
+                return None
+
+        future = asyncio.run_coroutine_threadsafe(_hit(), loop)
+        try:
+            return future.result(timeout=3)
+        except Exception:
+            return None
+
+    def _cache_retrieval_result(self, query: str, docs: List[Document]) -> None:
+        import asyncio
+        import json
+        loop = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return
+
+        from utils.redis_client import get_redis
+
+        async def _store():
+            redis = await get_redis()
+            if redis is None:
+                return
+            key = self._cache_key(query)
+            data = [{"page_content": d.page_content, "metadata": d.metadata} for d in docs]
+            await redis.setex(key, 600, json.dumps(data, ensure_ascii=False))
+
+        asyncio.run_coroutine_threadsafe(_store(), loop)

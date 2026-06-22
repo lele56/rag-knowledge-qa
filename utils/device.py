@@ -1,3 +1,4 @@
+﻿# utils/device.py
 from config.settings import settings
 from utils.logger import logger
 def get_device() -> str:

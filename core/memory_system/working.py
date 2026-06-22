@@ -1,3 +1,4 @@
+﻿# core/memory_system/working.py
 """
 工作记忆 (Working Memory)。
 

@@ -1,3 +1,4 @@
+﻿# core/memory/short_term.py
 """短期记忆 — 基于 LangChain InMemoryChatMessageHistory（非 deprecated）。
 
 窗口模式：最近 N 轮对话，内存中滚动。
@@ -10,11 +11,6 @@ from utils.logger import logger
 
 
 class ConversationMemory:
-    """轻量级对话记忆，兼容旧 ConversationBufferWindowMemory 的 API。
-
-    底层使用 InMemoryChatMessageHistory（langchain_core，非 deprecated）。
-    """
-
     def __init__(self, window_size: int = 6):
         self._store = InMemoryChatMessageHistory()
         self._window_size = window_size

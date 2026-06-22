@@ -1,3 +1,4 @@
+﻿# core/tools/pipeline.py
 """
 工具管道 — 链式调用 + 条件分支
 

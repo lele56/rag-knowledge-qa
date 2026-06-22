@@ -1,18 +1,19 @@
+﻿# services/qa_service.py
 """QA 服务 — 使用 RAGAgent 的 ReAct 模式问答"""
 
 import asyncio
-from typing import Dict, Any, List
+from typing import Dict, Any
 from config.settings import settings
 from config.prompts import GRAPH_INTENT_PROMPT
-from utils.cache import AsyncTTLCache
+from utils.cache import AsyncTTLCache, AsyncRedisCache
 from utils.logger import logger
 from core.agent.rag_agent import get_rag_agent, RAGAgent
-from core.llm import get_llm
+from core.infrastructure.llm import get_llm
 from chains.graph_chain import get_graph_chain
+from services.rate_limit import check_rate_limit
 
 
 async def _should_use_graph(question: str) -> bool:
-    """用 LLM 判断用户意图是否需要图谱查询"""
     try:
         llm = get_llm()
         prompt = GRAPH_INTENT_PROMPT.format(question=question)
@@ -25,7 +26,6 @@ async def _should_use_graph(question: str) -> bool:
 
 
 def _should_auto_store_semantic(question: str, answer: str) -> bool:
-    """判断是否应自动存入语义记忆（Neo4j）"""
     if not settings.LS_ENABLED:
         return False
     if len(answer) < 200:
@@ -36,36 +36,40 @@ def _should_auto_store_semantic(question: str, answer: str) -> bool:
 
 
 class QAService:
-    """QA 服务层 — 封装 RAG Agent + 图谱增强
-
-    用法:
-        svc = QAService()
-        result = await svc.ask("问题")
-        print(result["answer"])
-    """
-
     def __init__(self):
         self.agent: RAGAgent = get_rag_agent()
         self.graph = get_graph_chain()
         self.agent.attach_graph(self.graph)
-        self.cache = (
-            AsyncTTLCache(settings.CACHE_TTL_SECONDS, settings.CACHE_MAX_SIZE)
-            if settings.CACHE_ENABLED else None
-        )
 
-    async def ask(self, question: str) -> Dict[str, Any]:
+        if settings.CACHE_ENABLED:
+            if settings.cache.backend == "redis":
+                self.cache = AsyncRedisCache(settings.redis.url, settings.cache.ttl_seconds)
+            else:
+                self.cache = AsyncTTLCache(settings.cache.ttl_seconds, settings.cache.max_size)
+        else:
+            self.cache = None
+
+    async def ask(self, question: str, session_id: str = "default") -> Dict[str, Any]:
         if self.cache:
             cached = await self.cache.get(question)
             if cached:
                 logger.info(f"Cache hit: {question[:50]}")
                 return cached
 
+        if not await check_rate_limit(session_id):
+            return {
+                "question": question,
+                "answer": "请求过于频繁，请稍后再试。",
+                "sources": [],
+                "agent_steps": 0,
+                "agent_state": "rate_limited",
+            }
+
         try:
             result = await self.agent.aask(question)
             answer = result.answer
             sources = result.sources or []
 
-            # 图谱增强：LLM 判断意图，而非关键词匹配
             if await _should_use_graph(question):
                 try:
                     graph_ans = await asyncio.to_thread(self.graph.run, question)
@@ -74,7 +78,6 @@ class QAService:
                 except Exception as e:
                     logger.warning(f"Graph failed: {e}")
 
-            # 自动存入语义记忆（满足条件时）
             if _should_auto_store_semantic(question, answer):
                 try:
                     from core.memory_system.semantic import store_semantic

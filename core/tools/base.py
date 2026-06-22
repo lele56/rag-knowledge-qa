@@ -1,3 +1,4 @@
+﻿# core/tools/base.py
 """工具系统 — 使用 LangChain BaseTool + @tool 装饰器"""
 
 from langchain_core.tools import BaseTool, tool, StructuredTool

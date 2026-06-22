@@ -1,4 +1,4 @@
-# core/retrievers/bm25.py
+﻿# core/retrievers/bm25.py
 """BM25 关键词检索器：基于 langchain_community 的 BM25Retriever。
 
 与向量检索互补，不会漏掉含精确关键词的内容。
@@ -91,7 +91,7 @@ class BM25Retriever(LangChainBM25):
 
 
 def get_bm25_retriever(k: int = 8, source_filter=None) -> Optional["BM25Retriever"]:
-    from core.vector_store import get_all_documents
+    from core.infrastructure.vector_store import get_all_documents
     all_docs = get_all_documents()
     if not all_docs:
         return None

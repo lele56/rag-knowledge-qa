@@ -1,3 +1,4 @@
+﻿# core/agent/base.py
 """
 ReAct Agent 基类 — 思考 + 行动（Native Function Calling 版）
 
@@ -250,9 +251,9 @@ class ReActAgent(ABC):
         """调用 LLM。支持字符串 prompt（兼容旧接口）和 messages + tools（Function Calling）。"""
         try:
             if messages is not None:
-                from core.llm import call_llm_messages_with_retry
+                from core.infrastructure.llm import call_llm_messages_with_retry
                 return await call_llm_messages_with_retry(messages, tools=tools)
-            from core.llm import call_llm_with_retry
+            from core.infrastructure.llm import call_llm_with_retry
             return await call_llm_with_retry(prompt)
         except Exception as e:
             logger.error(f"LLM 调用失败: {e}")

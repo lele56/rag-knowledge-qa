@@ -1,3 +1,4 @@
+﻿# core/memory/manager.py
 """
 【MemoryManager：统一记忆入口】
 
@@ -44,11 +45,10 @@ class MemoryManager:
         return self._lts if self._lts is not False else None
 
     def remember(self, question: str, answer: str, save_long: bool = False) -> None:
-        """写入短期记忆。save_long=True 时同步写长期。"""
         if not question or not answer:
             return
         try:
-            from core.memory import get_memory
+            from core.memory.short_term import get_memory
             get_memory().save_context({"input": question}, {"answer": answer})
         except Exception as e:
             logger.warning(f"写入短期记忆失败: {e}")
@@ -59,7 +59,7 @@ class MemoryManager:
             logger.debug("🧠 短期记忆 +1")
 
     def clear_short_term(self) -> None:
-        from core.memory import clear_memory
+        from core.memory.short_term import clear_memory
         clear_memory()
 
     def save_long_term(self, question: str, answer: str, sources: Optional[List[str]] = None) -> bool:

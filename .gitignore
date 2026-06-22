@@ -37,6 +37,9 @@ data/*.json
 !data/*.example.json
 !data/test_question_example.json
 
+# 文档指南（仅在本地保留）
+docs/
+
 # 测试文档（本地 PDF 不入库）
 data/test_docs/
 

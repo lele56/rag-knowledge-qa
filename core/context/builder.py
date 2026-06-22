@@ -1,3 +1,4 @@
+﻿# core/context/builder.py
 """GSSC 上下文构建器 — Gather → Select → Structure → Compress
 
 借鉴 HelloAgents 的 GSSC 模式，将 ad-hoc 上下文拼接替换为结构化、可预算的构建流程。

@@ -1,10 +1,10 @@
-# core/retrievers/enhanced.py
+﻿# core/retrievers/enhanced.py
 """检索增强：Qdrant 格式转换 + LangChain 降噪 + 上下文标记"""
 import re
 from typing import Optional, Any, List
 from langchain_core.documents import Document
 from langchain_classic.retrievers.document_compressors import EmbeddingsFilter
-from core.embeddings import get_embeddings
+from core.infrastructure.embeddings import get_embeddings
 from utils.logger import logger
 
 

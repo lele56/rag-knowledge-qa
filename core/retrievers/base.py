@@ -1,3 +1,4 @@
+﻿# core/retrievers/base.py
 """
 【核心检索器：DirectQdrantRetriever】
 
@@ -22,8 +23,8 @@ from collections import defaultdict
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 
-from core.vector_store import _get_client
-from core.embeddings import get_embeddings
+from core.infrastructure.vector_store import _get_client
+from core.infrastructure.embeddings import get_embeddings
 from config.settings import settings
 from utils.logger import logger
 

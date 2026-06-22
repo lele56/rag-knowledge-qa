@@ -1,6 +1,7 @@
+﻿# core/retrievers/multi_query.py
 from langchain_core.prompts import PromptTemplate
 from langchain_classic.retrievers.multi_query import MultiQueryRetriever
-from core.llm import get_llm
+from core.infrastructure.llm import get_llm
 from config.settings import settings
 from config.prompts import MULTI_QUERY_PROMPT_FAST
 

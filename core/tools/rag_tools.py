@@ -1,3 +1,4 @@
+﻿# core/tools/rag_tools.py
 """RAG 专用工具 — 使用 LangChain @tool 装饰器自动生成 schema
 
 工具列表:

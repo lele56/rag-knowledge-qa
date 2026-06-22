@@ -1,8 +1,9 @@
+﻿# core/infrastructure/vector_store.py
 from typing import List, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, PayloadSchemaType
 from langchain_qdrant import QdrantVectorStore
-from core.embeddings import get_embeddings
+from core.infrastructure.embeddings import get_embeddings
 from config.settings import settings
 from utils.logger import logger
 
@@ -128,7 +129,7 @@ def add_documents_in_batches(store, docs) -> int:
     logger.info(f"🧮 计算 {total} 个 chunks 的 embedding（{EMBED_BATCH}条/批）...")
 
     try:
-        from core.embeddings import get_embeddings
+        from core.infrastructure.embeddings import get_embeddings
         embeddings = get_embeddings()
         vectors = []
 

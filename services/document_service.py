@@ -1,7 +1,8 @@
+﻿# services/document_service.py
 from pathlib import Path
 import asyncio
 from core.doc.document_loader import load_and_split_documents, make_doc_id
-from core.vector_store import get_vector_store, add_documents_in_batches, _get_client, delete_by_doc_id, get_doc_chunk_sample
+from core.infrastructure.vector_store import get_vector_store, add_documents_in_batches, _get_client, delete_by_doc_id, get_doc_chunk_sample
 from core.retrievers.bm25 import reset_bm25_retriever
 from config.settings import settings
 from utils.logger import logger

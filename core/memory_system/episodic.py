@@ -1,3 +1,4 @@
+﻿# core/memory_system/episodic.py
 """
 情景记忆 (Episodic Memory)。
 
@@ -29,8 +30,8 @@ def _to_float_list(vec) -> List[float]:
 
 def _ensure_collection():
     """确保 `episodic_memory` 集合存在，不存在就创建。"""
-    from core.vector_store import _get_client
-    from core.embeddings import get_embeddings
+    from core.infrastructure.vector_store import _get_client
+    from core.infrastructure.embeddings import get_embeddings
     from qdrant_client.http.models import Distance, VectorParams
 
     client = _get_client()
@@ -57,8 +58,8 @@ def store_episodic(question: str,
 
     try:
         _ensure_collection()
-        from core.vector_store import _get_client
-        from core.embeddings import get_embeddings
+        from core.infrastructure.vector_store import _get_client
+        from core.infrastructure.embeddings import get_embeddings
         from qdrant_client.http.models import PointStruct
 
         client = _get_client()
@@ -101,7 +102,7 @@ def store_episodic(question: str,
 
 def _evict_if_too_many():
     """超过 EPISODIC_MAX_STORE 时，按 timestamp 删最旧的。"""
-    from core.vector_store import _get_client
+    from core.infrastructure.vector_store import _get_client
 
     client = _get_client()
     col = cfg.EPISODIC_COLLECTION
@@ -158,8 +159,8 @@ def recall_episodic(query: str, source_filter=None) -> List[Tuple[float, str]]:
         return []
 
     try:
-        from core.vector_store import _get_client
-        from core.embeddings import get_embeddings
+        from core.infrastructure.vector_store import _get_client
+        from core.infrastructure.embeddings import get_embeddings
 
         _ensure_collection()
         client = _get_client()

@@ -1,3 +1,4 @@
+﻿# core/agent/rag_agent.py
 """
 RAG ReAct Agent — 知识库问答专用 Agent
 
@@ -32,7 +33,7 @@ from core.tools.rag_tools import (
     graph_query,
     set_tool_deps,
 )
-from core.context_builder import ContextBuilder, ContextConfig
+from core.context.builder import ContextBuilder, ContextConfig
 from config.prompts import RAG_AGENT_PROMPT, QUICK_ANSWER_PROMPT, RAG_SYSTEM_INSTRUCTION
 from utils.logger import logger
 
@@ -234,20 +235,20 @@ def create_rag_agent(
     global _rag_agent
 
     if llm is None:
-        from core.llm import get_llm
+        from core.infrastructure.llm import get_llm
         llm = get_llm()
 
     agent = RAGAgent(llm=llm, **kwargs)
 
     # 自动注入检索器
     try:
-        from core.retriever_factory import get_retriever
+        from core.retrievers.factory import get_retriever
         retriever = get_retriever()
 
         def _retrieve(query: str, top_k: int = 8, **kwargs) -> List[Document]:
             source_filter = kwargs.get("source_filter", None)
             if source_filter:
-                from core.retriever_factory import get_retriever as _get_retriever
+                from core.retrievers.factory import get_retriever as _get_retriever
                 normalized = _normalize_source_filter(source_filter)
                 doc_count = len(normalized) if normalized else 0
                 per_doc_min = max(1, min(3, top_k // max(1, doc_count)))
@@ -320,7 +321,7 @@ def create_rag_agent(
 
     # 自动注入记忆管理器
     try:
-        from core.memory_manager import get_memory_manager
+        from core.memory import get_memory_manager
         memory_manager = get_memory_manager()
         agent.attach_memory(memory_manager)
         logger.info("RAGAgent: 已注入记忆管理器")

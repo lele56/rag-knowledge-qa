@@ -1,4 +1,4 @@
-"""上下文构建器单元测试"""
+﻿"""上下文构建器单元测试"""
 
 import pytest
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -10,20 +10,20 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 class TestContextConfig:
     def test_defaults(self):
-        from core.context_builder import ContextConfig
+        from core.context.builder import ContextConfig
         cfg = ContextConfig()
         assert cfg.max_tokens == 6000
         assert cfg.enable_mmr is True
         assert cfg.mmr_lambda == 0.7
 
     def test_custom(self):
-        from core.context_builder import ContextConfig
+        from core.context.builder import ContextConfig
         cfg = ContextConfig(max_tokens=2000, enable_mmr=False)
         assert cfg.max_tokens == 2000
         assert cfg.enable_mmr is False
 
     def test_available_tokens(self):
-        from core.context_builder import ContextConfig
+        from core.context.builder import ContextConfig
         cfg = ContextConfig(max_tokens=6000, reserve_ratio=0.15)
         assert cfg.available_tokens == 5100  # 6000 * 0.85
 
@@ -35,7 +35,7 @@ class TestContextConfig:
 class TestContextBuilder:
     @pytest.fixture
     def builder(self):
-        from core.context_builder import ContextBuilder, ContextConfig
+        from core.context.builder import ContextBuilder, ContextConfig
         return ContextBuilder(ContextConfig())
 
     def test_empty_docs(self, builder):

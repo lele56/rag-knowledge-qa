@@ -1,4 +1,4 @@
-"""QA 管线集成测试 — 无需真实服务，验证组件协作行为"""
+﻿"""QA 管线集成测试 — 无需真实服务，验证组件协作行为"""
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
@@ -177,18 +177,18 @@ class TestConfigIntegration:
 
 class TestLLMIntegration:
     def test_get_llm(self):
-        from core.llm import get_llm
+        from core.infrastructure.llm import get_llm
         llm = get_llm()
         assert llm is not None
 
     def test_llm_singleton(self):
-        from core.llm import get_llm
+        from core.infrastructure.llm import get_llm
         l1 = get_llm()
         l2 = get_llm()
         assert l1 is l2
 
     def test_llm_model_config(self):
-        from core.llm import get_llm
+        from core.infrastructure.llm import get_llm
         from config.settings import settings
         llm = get_llm()
         assert llm.model_name == settings.LLM_MODEL

@@ -1,3 +1,4 @@
+﻿# core/memory_system/semantic.py
 """
 语义记忆 (Semantic Memory)。
 
@@ -77,7 +78,7 @@ def _extract_concepts(text: str, max_concepts: int = 5) -> List[str]:
 def _cypher(query: str, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
     """跑一条 Cypher 查询，捕获异常。"""
     try:
-        from core.graph_store import get_graph
+        from core.infrastructure.graph_store import get_graph
         graph = get_graph()
         return graph.query(query, params=params or {})
     except Exception as e:

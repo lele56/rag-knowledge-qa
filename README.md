@@ -156,15 +156,19 @@ python scripts/_eval_now.py --mode retrieval --strategy multi_query --limit 10
 │   ├── agent/           # ReAct Agent
 │   ├── context/         # 上下文构建（GSSC 策略）
 │   ├── doc/             # 文档加载、切分、注册
-│   ├── memory_system/   # 长期记忆系统
-│   ├── retrievers/      # 检索器（混合、BM25、HyDE、MultiQuery）
+│   ├── infrastructure/  # LLM / Embedding / 重排序 / 向量存储 / 图谱存储
+│   ├── memory/          # 短期记忆 + 记忆管理器
+│   ├── memory_system/   # 长期记忆（episodic / semantic / working）
+│   ├── retrievers/      # 检索器（混合、BM25、HyDE、MultiQuery）+ 工厂
 │   └── tools/           # Agent 工具（文档聚焦、记忆召回等）
+├── data/                # 文档数据
+├── docker/              # Docker 编排（Qdrant + Neo4j + Redis）
 ├── evaluation/          # 评估框架（检索 + 生成 + 性能）
 ├── scripts/             # 脚本（导入文档、评估、重建索引）
-├── services/            # 业务服务层
+├── services/            # 业务服务层（QA / 文档 / 速率限制 / 会话）
 ├── tests/               # 测试（单元 + 集成）
-├── utils/               # 工具（缓存、日志、设备检测）
-├── web/                 # Gradio Web UI
+├── utils/               # 工具（缓存、日志、Redis 客户端、设备检测）
+├── web/                 # Gradio Web UI（按 Tab 拆分）
 ├── .env.example         # 环境变量模板
 ├── Makefile             # 开发常用命令
 └── main.py              # 入口
@@ -177,6 +181,8 @@ python scripts/_eval_now.py --mode retrieval --strategy multi_query --limit 10
 | LangChain 0.3+ | RAG 编排框架 |
 | Qdrant Cloud | 向量数据库 |
 | Neo4j AuraDB | 图数据库（GraphRAG） |
+| Redis | 缓存 / 会话 / 速率限制 |
+| Docker | 本地基础设施编排 |
 | BGE-M3 / BGE-Reranker-v2 | 嵌入 + 重排序 |
 | Gradio 4 | Web UI |
 | OpenAI 兼容 API | LLM 推理 |

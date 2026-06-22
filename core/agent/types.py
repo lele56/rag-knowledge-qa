@@ -1,3 +1,4 @@
+﻿# core/agent/types.py
 """
 Agent 基础类型定义
 

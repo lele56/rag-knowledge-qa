@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 重建 Qdrant 集合 —— 清空并重新导入所有论文文档
 
@@ -22,7 +22,7 @@ from utils.logger import logger
 
 def clear_collection():
     """清空整个 Qdrant 集合"""
-    from core.vector_store import _get_client, get_vector_store
+    from core.infrastructure.vector_store import _get_client, get_vector_store
 
     client = _get_client()
     col_name = settings.QDRANT_COLLECTION_NAME
@@ -38,7 +38,7 @@ def clear_collection():
             logger.info(f"集合 {col_name} 不存在，跳过删除")
 
         # 触发 vector_store 重建，自动创建集合
-        from core.vector_store import _store as _store_global
+        from core.infrastructure.vector_store import _store as _store_global
         import core.vector_store as vs
         vs._store = None
         vs._payload_indexes_ensured = False

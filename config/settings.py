@@ -1,3 +1,4 @@
+# config/settings.py
 """配置管理 — 基于 pydantic-settings 的分层配置。
 
 特性:
@@ -131,8 +132,31 @@ class ChunkingSettings(BaseSettings):
 
 class CacheSettings(BaseSettings):
     enabled: bool = Field(alias="CACHE_ENABLED", default=True)
+    backend: str = Field(alias="CACHE_BACKEND", default="memory")
     ttl_seconds: int = Field(alias="CACHE_TTL_SECONDS", default=3600, ge=0)
     max_size: int = Field(alias="CACHE_MAX_SIZE", default=1000, ge=1, le=100000)
+
+    model_config = SettingsConfigDict(extra="ignore")
+
+    @field_validator("backend")
+    @classmethod
+    def validate_backend(cls, v: str) -> str:
+        allowed = {"memory", "redis"}
+        if v not in allowed:
+            raise ValueError(f"cache backend 必须是 {allowed} 之一，当前: {v}")
+        return v
+
+
+class RedisSettings(BaseSettings):
+    url: str = Field(alias="REDIS_URL", default="redis://localhost:6379/0")
+
+    model_config = SettingsConfigDict(extra="ignore")
+
+
+class RateLimitSettings(BaseSettings):
+    enabled: bool = Field(alias="RATE_LIMIT_ENABLED", default=False)
+    max_per_minute: int = Field(alias="RATE_LIMIT_MAX_PER_MINUTE", default=10, ge=1, le=100)
+    session_ttl: int = Field(alias="SESSION_TTL_MINUTES", default=30, ge=1, le=1440)
 
     model_config = SettingsConfigDict(extra="ignore")
 
@@ -200,6 +224,8 @@ class Settings(BaseSettings):
     long_term_memory: LongTermMemorySettings = LongTermMemorySettings()
     chunking: ChunkingSettings = ChunkingSettings()
     cache: CacheSettings = CacheSettings()
+    redis: RedisSettings = RedisSettings()
+    rate_limit: RateLimitSettings = RateLimitSettings()
     server: ServerSettings = ServerSettings()
 
     # ---- 顶层 ----
@@ -232,6 +258,9 @@ class Settings(BaseSettings):
             "LS_": "long_term_memory",
             "CHUNK_": "chunking",
             "CACHE_": "cache",
+            "REDIS_": "redis",
+            "RATE_LIMIT_": "rate_limit",
+            "SESSION_": "rate_limit",
             "SERVER_": "server",
         }
 
@@ -297,8 +326,13 @@ class Settings(BaseSettings):
         "CHUNK_TOKEN_MAX":         ("chunking", "token_max"),
         "CHUNK_OVERLAP_TOKEN":     ("chunking", "overlap_token"),
         "CACHE_ENABLED":           ("cache", "enabled"),
+        "CACHE_BACKEND":           ("cache", "backend"),
         "CACHE_TTL_SECONDS":       ("cache", "ttl_seconds"),
         "CACHE_MAX_SIZE":          ("cache", "max_size"),
+        "REDIS_URL":               ("redis", "url"),
+        "RATE_LIMIT_ENABLED":      ("rate_limit", "enabled"),
+        "RATE_LIMIT_MAX_PER_MINUTE": ("rate_limit", "max_per_minute"),
+        "SESSION_TTL_MINUTES":     ("rate_limit", "session_ttl"),
         "USE_CUDA":                ("embedding", "use_cuda"),
         "BASE_DIR":                ("_self", "base_dir"),
         "LOCAL_DATA_DIR":          ("_self", "local_data_dir"),

@@ -1,3 +1,4 @@
+﻿# core/doc/document_chunk.py
 """文档分块：RecursiveCharacterTextSplitter / SemanticChunker 双模式 + 质量过滤"""
 import re
 from pathlib import Path
@@ -57,7 +58,7 @@ def _semantic_split(
 ) -> List[Document]:
     try:
         from langchain_experimental.text_splitter import SemanticChunker
-        from core.embeddings import get_embeddings
+        from core.infrastructure.embeddings import get_embeddings
         splitter = SemanticChunker(
             embeddings=get_embeddings(),
             buffer_size=1,

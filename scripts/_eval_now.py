@@ -1,4 +1,4 @@
-import json, sys, time, argparse
+﻿import json, sys, time, argparse
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from evaluation.runner import EvalRunner
@@ -28,9 +28,9 @@ if args.limit > 0:
     testset.cases = testset.cases[:args.limit]
 _safe_print(f"加载 {len(testset)} 道测试题  (策略: {args.strategy or settings.RETRIEVAL_STRATEGY}, 模式: {args.mode})\n")
 
-from core.retriever_factory import get_retriever
-from core.vector_store import get_vector_store
-from core.embeddings import get_embeddings
+from core.retrievers.factory import get_retriever
+from core.infrastructure.vector_store import get_vector_store
+from core.infrastructure.embeddings import get_embeddings
 
 store = get_vector_store()
 embeddings = get_embeddings()
@@ -43,7 +43,7 @@ runner = EvalRunner(retriever_fn=retriever_fn)
 
 # ---------- 生成评估需要 QA 函数 ----------
 if args.mode in ("gen", "full"):
-    from core.llm import get_llm
+    from core.infrastructure.llm import get_llm
     from langchain_core.prompts import ChatPromptTemplate
     llm = get_llm()
     qa_prompt = ChatPromptTemplate.from_messages([

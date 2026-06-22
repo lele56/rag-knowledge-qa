@@ -1,3 +1,4 @@
+﻿# core/retrievers/hyde.py
 from dataclasses import dataclass
 from typing import List, Any
 from langchain_core.retrievers import BaseRetriever
