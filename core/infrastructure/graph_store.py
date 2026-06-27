@@ -1,4 +1,4 @@
-﻿# core/infrastructure/graph_store.py
+# core/infrastructure/graph_store.py
 from langchain_neo4j import Neo4jGraph
 from config.settings import settings
 from utils.logger import logger
@@ -30,14 +30,15 @@ def get_graph_status() -> dict:
             r = graph.query("MATCH (n) RETURN count(n) AS cnt")
             nodes = r[0]["cnt"] if r else 0
             return {"ok": True, "nodes": nodes, "msg": f"✅ Neo4j 正常（{nodes} 节点）"}
-        except Exception:
-            return {"ok": True, "nodes": 0, "msg": "✅ Neo4j 正常"}
+        except Exception as e:
+            return {"ok": False, "nodes": 0, "msg": f"❌ Neo4j 查询失败: {type(e).__name__}"}
 
+    result = _try_check()
+    if result["ok"]:
+        return result
+
+    _graph = None
     try:
         return _try_check()
-    except Exception:
-        _graph = None
-        try:
-            return _try_check()
-        except Exception as e:
-            return {"ok": False, "nodes": 0, "msg": f"❌ Neo4j 不可用: {type(e).__name__}"}
+    except Exception as e:
+        return {"ok": False, "nodes": 0, "msg": f"❌ Neo4j 不可用: {type(e).__name__}"}

@@ -1,4 +1,4 @@
-﻿# chains/graph_chain.py
+# chains/graph_chain.py
 from langchain_neo4j import GraphCypherQAChain
 from core.infrastructure.llm import get_llm
 from core.infrastructure.graph_store import get_graph

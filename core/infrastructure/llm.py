@@ -1,4 +1,4 @@
-﻿# core/infrastructure/llm.py
+# core/infrastructure/llm.py
 import asyncio
 import time
 from typing import Optional
@@ -31,10 +31,10 @@ def get_llm() -> BaseChatModel:
 
 async def call_llm_with_retry(prompt: str, max_retries: int = 3, base_delay: float = 2.0) -> str:
     """带重试的 LLM 调用（字符串 prompt）"""
+    llm = get_llm()
     last_error = None
     for attempt in range(max_retries):
         try:
-            llm = get_llm()
             if hasattr(llm, 'ainvoke'):
                 resp = await llm.ainvoke(prompt)
                 return resp.content if hasattr(resp, 'content') else str(resp)
@@ -54,10 +54,10 @@ async def call_llm_messages_with_retry(
     messages: list, tools: list = None, max_retries: int = 3, base_delay: float = 2.0,
 ):
     """带重试的 LLM 调用（messages + 可选 tools），返回完整的 AIMessage（含 tool_calls）。"""
+    llm = get_llm()
     last_error = None
     for attempt in range(max_retries):
         try:
-            llm = get_llm()
             kwargs = {}
             if tools:
                 kwargs["tools"] = tools

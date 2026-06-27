@@ -1,4 +1,4 @@
-﻿# core/memory/short_term.py
+# core/memory/short_term.py
 """短期记忆 — 基于 LangChain InMemoryChatMessageHistory（非 deprecated）。
 
 窗口模式：最近 N 轮对话，内存中滚动。
@@ -78,7 +78,8 @@ def get_chat_history_as_text() -> str:
             else:
                 role = f"💬 {msg_type}"
             lines.append(f"**{idx}. {role}**\n\n{content}\n")
-        except Exception:
+        except Exception as e:
+            logger.debug(f"消息格式化失败: {e}")
             lines.append(f"**{idx}.** {msg}\n")
 
     if not lines:

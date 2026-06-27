@@ -1,4 +1,4 @@
-﻿# utils/device.py
+# utils/device.py
 from config.settings import settings
 from utils.logger import logger
 def get_device() -> str:
@@ -17,6 +17,6 @@ def get_device() -> str:
                 logger.warning("device: settings.USE_CUDA=True 但 CUDA 不可用，回退到 CPU")
         except Exception as e:
             logger.warning(f"device: 检测 CUDA 失败，用 CPU: {e}")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"device: 获取设备配置失败: {e}")
     return device

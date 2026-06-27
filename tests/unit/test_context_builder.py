@@ -1,4 +1,4 @@
-﻿"""上下文构建器单元测试"""
+"""上下文构建器单元测试"""
 
 import pytest
 from unittest.mock import MagicMock, PropertyMock, patch

@@ -1,4 +1,4 @@
-﻿# core/memory_system/episodic.py
+# core/memory/long_term/episodic.py
 """
 情景记忆 (Episodic Memory)。
 
@@ -38,7 +38,8 @@ def _ensure_collection():
     col = cfg.EPISODIC_COLLECTION
     try:
         client.get_collection(col)
-    except Exception:
+    except Exception as e:
+        logger.debug(f"episodic collection 不存在: {e}，创建中...")
         emb = get_embeddings()
         sample_vec = emb.embed_query("test")
         client.create_collection(

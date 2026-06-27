@@ -1,4 +1,4 @@
-﻿# utils/redis_client.py
+# utils/redis_client.py
 """Redis 客户端管理 — 统一连接池，供各模块共享。
 
 用法:
@@ -68,8 +68,8 @@ async def close_redis():
     if _redis is not None:
         try:
             await _redis.close()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Redis 关闭失败: {e}")
         _redis = None
     _init_failed = False
     logger.info("Redis 连接已关闭")

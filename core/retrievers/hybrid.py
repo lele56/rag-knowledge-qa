@@ -1,4 +1,5 @@
-﻿# core/retrievers/hybrid.py
+# -*- coding: utf-8 -*-
+# core/retrievers/hybrid.py
 """混合检索：向量搜索 (MMR) + BM25 关键词 → 合并去重 → CrossEncoder 重排序
 
 两阶段检索（无 source_filter 时）：
@@ -21,6 +22,14 @@ from core.retrievers.enhanced import scored_point_to_doc, denoise_docs, enrich_w
 _STATE = "_hr_int_state_v1"
 
 
+def _cache_error_handler(future):
+    """异步缓存写入失败时的回调，记录错误但不中断主流程。"""
+    try:
+        future.result()
+    except Exception as e:
+        logger.debug(f"Redis 缓存写入失败: {e}")
+
+
 def _normalize_pf(pf) -> Optional[Set[str]]:
     """把 python_filter 的各种输入归一化成 set[str]（与 base.py 保持一致的语义）。"""
     if pf is None:
@@ -39,7 +48,8 @@ def _get_all_doc_ids() -> set[str]:
         from core.doc.doc_id_registry import get_doc_id_registry
         reg = get_doc_id_registry()
         return reg.get_all_doc_ids()
-    except Exception:
+    except Exception as e:
+        logger.debug(f"获取 doc_id 注册表失败: {e}")
         return set()
 
 
@@ -68,10 +78,10 @@ class HybridRetriever(BaseRetriever):
     ):
         try:
             super().__init__()
-        except Exception:
+        except TypeError:
             try:
                 super().__init__(callback_manager=None)
-            except Exception:
+            except TypeError:
                 pass
 
         self.__dict__[_STATE] = _HybridState(
@@ -87,6 +97,38 @@ class HybridRetriever(BaseRetriever):
     def _s(self) -> _HybridState:
         """内部状态访问器。"""
         return self.__dict__[_STATE]
+
+    def _merge_rrf(self, vector_docs: List[Document], bm25_docs: List[Document], k: int = 60) -> List[Document]:
+        """RRF (Reciprocal Rank Fusion) 融合向量和 BM25 结果。
+
+        两个检索器都排名靠前的 chunk 得分高，只在单个检索器排名靠前的得分低。
+        比 1:1 交替合并更能抑制单侧噪声。
+        """
+        if not bm25_docs:
+            return list(vector_docs)
+        if not vector_docs:
+            return list(bm25_docs)
+
+        # 1-based rank
+        v_ranks = {doc.page_content[:100]: i + 1 for i, doc in enumerate(vector_docs)}
+        b_ranks = {doc.page_content[:100]: i + 1 for i, doc in enumerate(bm25_docs)}
+
+        seen = set()
+        all_docs = []
+        for doc in vector_docs + bm25_docs:
+            key = doc.page_content[:100]
+            if key in seen:
+                continue
+            seen.add(key)
+            r_v = v_ranks.get(key, len(vector_docs) + 1)
+            r_b = b_ranks.get(key, len(bm25_docs) + 1)
+            rrf_score = 1.0 / (k + r_v) + 1.0 / (k + r_b)
+            doc.metadata["_rrf_score"] = rrf_score
+            all_docs.append(doc)
+
+        all_docs.sort(key=lambda d: d.metadata.get("_rrf_score", 0), reverse=True)
+        logger.info(f"  RRF 融合: 向量 {len(vector_docs)} + BM25 {len(bm25_docs)} → {len(all_docs)} 条")
+        return all_docs
 
     def _merge_and_dedup(self, vector_docs: List[Document], bm25_docs: List[Document]) -> List[Document]:
         """合并向量+BM25结果并去重。
@@ -204,35 +246,52 @@ class HybridRetriever(BaseRetriever):
             logger.warning(f"两阶段 Stage1 失败: {e}，回退普通检索")
             return self._single_stage_retrieve(query)
 
-        doc_best_score: dict[str, float] = {}
+        doc_all_scores: dict[str, list[float]] = {}
         for d in vector_docs:
             did = str(d.metadata.get("doc_id", ""))
             if not did:
                 continue
             score = float(d.metadata.get("_score", 0) or 0)
-            if score > doc_best_score.get(did, 0.0):
-                doc_best_score[did] = score
+            doc_all_scores.setdefault(did, []).append(score)
+
+        doc_best_score: dict[str, float] = {}
+        for did, scores in doc_all_scores.items():
+            top3 = sorted(scores, reverse=True)[:3]
+            doc_best_score[did] = sum(top3) / len(top3)
 
         if not doc_best_score:
             logger.warning("两阶段: Stage1 未命中任何文档")
             return self._single_stage_retrieve(query)
 
-        # 取 top-5 最相关文档（给 reranker 更多候选）
+        # 文档数 ≤ 10 时全覆盖，否则至少搜 8 篇（小文档也不被漏掉）
         sorted_docs = sorted(doc_best_score.items(), key=lambda x: x[1], reverse=True)
-        N = min(5, len(sorted_docs))
+        N = len(sorted_docs) if len(sorted_docs) <= 10 else max(8, min(len(sorted_docs), 15))
         top_docs = [d for d, _ in sorted_docs[:N]]
         logger.info(
             f"Stage1 (MultiQuery): 全库 {len(doc_ids)} 篇 → 相关 {N} 篇: "
             f"{', '.join(f'{d[:30]}({doc_best_score[d]:.3f})' for d in top_docs)}"
         )
 
-        # ---- Stage 2: Qdrant 聚焦搜索 ----
+        # ---- Stage 2: Qdrant + BM25 → RRF 融合 ----
         client = _get_client()
         emb = get_embeddings()
         query_vec = emb.embed_query(query)
         col = settings.QDRANT_COLLECTION_NAME
         top_k = self._s.rerank_top_k
         k_per_doc = max(10, top_k * 2)
+        bm25_retriever = self._s.bm25_retriever
+
+        # 一次 BM25 搜索，按 doc_id 分组，避免每个文档重复调用
+        bm25_by_doc: dict[str, list[Document]] = {}
+        if bm25_retriever:
+            try:
+                all_bm25 = bm25_retriever.invoke(query)
+                for d in all_bm25:
+                    did = str(d.metadata.get("doc_id", ""))
+                    if did:
+                        bm25_by_doc.setdefault(did, []).append(d)
+            except Exception as e:
+                logger.warning(f"  Stage2 BM25: {e}")
 
         all_docs: list[Document] = []
 
@@ -255,6 +314,11 @@ class HybridRetriever(BaseRetriever):
                         docs.append(d)
             except Exception as e:
                 logger.warning(f"  Stage2 [{did[:30]}]: 查询失败: {e}")
+
+            # RRF 融合向量 + BM25
+            bm25_docs = bm25_by_doc.get(did, [])
+            if bm25_docs:
+                return self._merge_rrf(docs, bm25_docs)
             return docs
 
         with ThreadPoolExecutor(max_workers=min(len(top_docs), 2)) as executor:
@@ -338,18 +402,48 @@ class HybridRetriever(BaseRetriever):
         else:
             docs = self._focused_retrieve(query)
 
+        top_k = kwargs.get("top_k")
+        if top_k and len(docs) > top_k:
+            docs = docs[:top_k]
+
         self._cache_retrieval_result(query, docs)
         return docs
 
     def _focused_retrieve(self, query: str) -> List[Document]:
-        vector_docs = self._s.vector_retriever.invoke(query)
         bm25_retriever = self._s.bm25_retriever
+
+        total_chunks = 0
+        if bm25_retriever and hasattr(bm25_retriever, "docs"):
+            pf = self._s.python_filter
+            if pf:
+                from core.retrievers.filtering import doc_matches_source_filter
+                total_chunks = sum(1 for d in bm25_retriever.docs if doc_matches_source_filter(d, pf))
+
+        dynamic_k = max(8, min(int(total_chunks * 0.1), 30))
+        if dynamic_k > 8:
+            logger.info(f"聚焦检索 → 文档 {total_chunks} chunks，动态 k={dynamic_k}")
+
+        vr = self._s.vector_retriever
+        orig_k, orig_fetch = vr.k, vr.fetch_k
+        vr.k = dynamic_k
+        vr.fetch_k = dynamic_k * 3
+        try:
+            vector_docs = vr.invoke(query)
+        finally:
+            vr.k, vr.fetch_k = orig_k, orig_fetch
+
         bm25_docs = bm25_retriever.invoke(query) if bm25_retriever else []
-        logger.info(f"混合检索 → 向量 {len(vector_docs)} 条, BM25 {len(bm25_docs)} 条")
 
         vector_docs = self._apply_python_filter(vector_docs)
         bm25_docs = self._apply_python_filter(bm25_docs)
-        return self._merge_rerank(query, vector_docs, bm25_docs)
+
+        merged = self._merge_rrf(list(vector_docs), list(bm25_docs))
+        logger.info(f"聚焦检索 → 向量 {len(vector_docs)} + BM25 {len(bm25_docs)} → RRF 融合 {len(merged)} 条")
+
+        merged = denoise_docs(merged, query=query, min_score=0.08, focused_mode=True)
+        merged = enrich_with_context(merged, window=1)
+
+        return self._rerank(query, merged)
 
     def _cache_key(self, query: str) -> str:
         import hashlib
@@ -385,13 +479,15 @@ class HybridRetriever(BaseRetriever):
                 from langchain_core.documents import Document
                 logger.info(f"检索缓存命中: {query[:40]}")
                 return [Document(**d) for d in data]
-            except Exception:
+            except Exception as e:
+                logger.debug(f"缓存数据解析失败: {e}")
                 return None
 
         future = asyncio.run_coroutine_threadsafe(_hit(), loop)
         try:
             return future.result(timeout=3)
-        except Exception:
+        except Exception as e:
+            logger.debug(f"缓存读取超时: {e}")
             return None
 
     def _cache_retrieval_result(self, query: str, docs: List[Document]) -> None:
@@ -413,4 +509,5 @@ class HybridRetriever(BaseRetriever):
             data = [{"page_content": d.page_content, "metadata": d.metadata} for d in docs]
             await redis.setex(key, 600, json.dumps(data, ensure_ascii=False))
 
-        asyncio.run_coroutine_threadsafe(_store(), loop)
+        future = asyncio.run_coroutine_threadsafe(_store(), loop)
+        future.add_done_callback(_cache_error_handler)

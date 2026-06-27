@@ -1,4 +1,4 @@
-﻿# core/doc/doc_id_registry.py
+# core/doc/doc_id_registry.py
 """
 【文档 ID 注册表：文件名 → doc_id 的双向映射】
 

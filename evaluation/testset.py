@@ -14,6 +14,8 @@ class TestCase:
     question: str
     expected_keywords: List[str] = field(default_factory=list)
     expected_answer: str = ""
+    gold_docs: List[str] = field(default_factory=list)
+    gold_chunks: List[str] = field(default_factory=list)
     category: str = "retrieval"
     difficulty: str = "medium"
     tags: List[str] = field(default_factory=list)
@@ -23,6 +25,8 @@ class TestCase:
             "question": self.question,
             "expected_keywords": self.expected_keywords,
             "expected_answer": self.expected_answer,
+            "gold_docs": self.gold_docs,
+            "gold_chunks": self.gold_chunks,
             "category": self.category,
             "difficulty": self.difficulty,
             "tags": self.tags,
@@ -34,6 +38,8 @@ class TestCase:
             question=d.get("question", ""),
             expected_keywords=d.get("expected_keywords", []) or d.get("expected_sources", []),
             expected_answer=d.get("expected_answer", "") or d.get("expected_answer_keywords", ""),
+            gold_docs=d.get("gold_docs", []) or [],
+            gold_chunks=d.get("gold_chunks", []) or [],
             category=d.get("category", "retrieval"),
             difficulty=d.get("difficulty", "medium"),
             tags=d.get("tags", []),

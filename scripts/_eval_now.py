@@ -1,4 +1,4 @@
-﻿import json, sys, time, argparse
+import json, sys, time, argparse
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from evaluation.runner import EvalRunner
@@ -21,19 +21,19 @@ parser.add_argument("--top-k", type=int, default=5,
                     help="检索 top_k 数量")
 parser.add_argument("--limit", type=int, default=0,
                     help="仅评估前 N 题 (0=全部)")
+parser.add_argument("--testset", type=Path, default=Path("data/test_question_ragas.json"),
+                    help="测试集文件路径 (默认: data/test_question_ragas.json)")
+parser.add_argument("--output", type=Path, default=Path("data/test_question_ragas_results.json"),
+                    help="结果输出路径 (默认: data/test_question_ragas_results.json)")
 args = parser.parse_args()
 
-testset = TestSet.from_json(Path("data/test_question_example.json"))
+testset = TestSet.from_json(Path(args.testset))
 if args.limit > 0:
     testset.cases = testset.cases[:args.limit]
 _safe_print(f"加载 {len(testset)} 道测试题  (策略: {args.strategy or settings.RETRIEVAL_STRATEGY}, 模式: {args.mode})\n")
 
 from core.retrievers.factory import get_retriever
-from core.infrastructure.vector_store import get_vector_store
-from core.infrastructure.embeddings import get_embeddings
 
-store = get_vector_store()
-embeddings = get_embeddings()
 retriever = get_retriever(source_filter=None, override_strategy=args.strategy)
 
 def retriever_fn(query, top_k=5):
@@ -132,6 +132,6 @@ output = {
         "generation": [gr.to_dict() for gr in summary.generation_details],
     },
 }
-with open("data/test_question_example_results.json", "w", encoding="utf-8") as f:
+with open(args.output, "w", encoding="utf-8") as f:
     json.dump(output, f, ensure_ascii=False, indent=2)
-_safe_print(f"\n结果已保存 -> data/test_question_example_results.json")
+_safe_print(f"\n结果已保存 -> {args.output}")

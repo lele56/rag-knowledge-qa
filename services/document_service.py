@@ -1,4 +1,4 @@
-﻿# services/document_service.py
+# services/document_service.py
 from pathlib import Path
 import asyncio
 from core.doc.document_loader import load_and_split_documents, make_doc_id
@@ -142,8 +142,8 @@ class DocumentService:
 
         try:
             reset_bm25_retriever()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"BM25 重置失败: {e}")
 
         return added
 

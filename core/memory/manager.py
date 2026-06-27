@@ -1,4 +1,4 @@
-﻿# core/memory/manager.py
+# core/memory/manager.py
 """
 【MemoryManager：统一记忆入口】
 
@@ -36,7 +36,7 @@ class MemoryManager:
     def _ensure_lts(self) -> Optional[Any]:
         if self._lts is None:
             try:
-                from core.memory_system import get_memory_system
+                from core.memory.long_term import get_memory_system
                 self._lts = get_memory_system()
                 logger.info("🧠 长期记忆系统已连接")
             except Exception as e:
@@ -94,9 +94,6 @@ class MemoryManager:
             logger.warning(f"长期记忆检索失败: {e}")
             return []
 
-
-# 向后兼容别名（rag_tools.py 在用）
-MemoryManager.add_to_working = MemoryManager.remember
 
 _mm_instance: Optional[MemoryManager] = None
 

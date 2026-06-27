@@ -1,0 +1,732 @@
+[
+  {
+    "question": "根据文档，由微软开发的深度学习优化库DeepSpeed为分布式训练提供了哪些优化技术支持？",
+    "expected_keywords": [],
+    "expected_answer": "内存优化（ZeRO技术、梯度检查点）和流水线并行（pipeline parallelism）。",
+    "gold_docs": [
+      "doc_49f4c7eb"
+    ],
+    "gold_chunks": [
+      "doc_49f4c7eb_chunk_40"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "在训练大型语言模型时，PaLM和OPT模型采用了什么策略来缓解训练过程中出现的损失尖峰（spike）问题？",
+    "expected_keywords": [],
+    "expected_answer": "采用从尖峰发生前的较早检查点（checkpoint）重启训练过程的简单策略，并跳过可能导致该问题的数据。",
+    "gold_docs": [
+      "doc_49f4c7eb"
+    ],
+    "gold_chunks": [
+      "doc_49f4c7eb_chunk_68"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "结合文档内容，请指出GPT-3和OPT(175B)模型在训练时使用的优化器分别是什么？同时，DeepSpeed-MII库通过哪四项核心技术来实现加速文本生成推理？",
+    "expected_keywords": [],
+    "expected_answer": "GPT-3使用Adam优化器，OPT(175B)使用AdamW优化器。DeepSpeed-MII通过块KV缓存（blocked KV caching）、连续批处理（continuous batching）、动态SplitFuse和高性能CUDA内核（high-performance CUDA Kernels）四项核心技术实现加速。",
+    "gold_docs": [
+      "doc_49f4c7eb"
+    ],
+    "gold_chunks": [
+      "doc_49f4c7eb_chunk_40",
+      "doc_49f4c7eb_chunk_68"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "相比于树状结构，图结构推理（如Graph of Thoughts）在处理复杂推理任务时具有哪些优势？此外，目前广泛认为LLM具备思维链（CoT）推理能力的来源是什么？",
+    "expected_keywords": [],
+    "expected_answer": "图结构提供了更大的推理灵活性，能够表征更复杂的关系和交互，并且在生成新想法时可以利用来自其他推理路径的想法。LLM具备CoT推理能力被认为来源于对代码数据的训练，因为代码数据组织严密，具有算法逻辑和编程流程。",
+    "gold_docs": [
+      "doc_49f4c7eb"
+    ],
+    "gold_chunks": [
+      "doc_49f4c7eb_chunk_123"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "大型语言模型的开发涉及底层库支持、训练策略与内在机制。请综合文档内容回答：1）DeepSpeed-Chat框架旨在简化哪类模型的训练与推理流程，并完整复现了InstructGPT的哪三个训练步骤？2）在模型超参数设置上，PaLM(540B)与BLOOM(176B)的精度类型（Precision Weight）分别是什么？3）从训练数据角度分析，为何代码数据被认为有助于提升LLM的推理性能？",
+    "expected_keywords": [],
+    "expected_answer": "1）简化了类ChatGPT模型的训练和推理流程；完整复现的三个训练步骤为：SFT（监督微调）、奖励模型微调（reward model fine-tuning）和RLHF（基于人类反馈的强化学习）。2）PaLM(540B)的精度类型为BF16，BLOOM(176B)的精度类型也为BF16。3）因为代码数据组织严密，具有算法逻辑和编程流程，这可能有助于提升大语言模型的推理性能。",
+    "gold_docs": [
+      "doc_49f4c7eb"
+    ],
+    "gold_chunks": [
+      "doc_49f4c7eb_chunk_40",
+      "doc_49f4c7eb_chunk_68",
+      "doc_49f4c7eb_chunk_123"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "根据文档内容，本文采用时间卷积网络（TCN）作为核心预测器主要看重它的哪三个优势？",
+    "expected_keywords": [],
+    "expected_answer": "资源效率（resource efficiency）、建模准确性（modeling accuracy）和复杂性管理（complexity management）。",
+    "gold_docs": [
+      "doc_0e785f3f"
+    ],
+    "gold_chunks": [
+      "doc_0e785f3f_chunk_1006"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "为了量化原始股票指数值与预测值之间的差异，文中明确使用了哪三项评估指标？",
+    "expected_keywords": [],
+    "expected_answer": "MAE、SMAPE和RMSE。",
+    "gold_docs": [
+      "doc_0e785f3f"
+    ],
+    "gold_chunks": [
+      "doc_0e785f3f_chunk_1014"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "传统的信号分解方法（如小波变换、经验模态分解等）在实际应用中存在哪些主要缺陷？相比之下，VMD方法通过什么机制提供了更高的优势？",
+    "expected_keywords": [],
+    "expected_answer": "传统方法存在模态混叠（mode aliasing）和端点效应（endpoint effects）等问题。VMD通过优化频域目标函数，提供了具有更高鲁棒性和准确性的分解框架。",
+    "gold_docs": [
+      "doc_0e785f3f"
+    ],
+    "gold_chunks": [
+      "doc_0e785f3f_chunk_1006"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "在TCN模型的训练过程中，它主要最小化哪种损失函数？最终预测的股票指数值是如何由各分量结果汇总得出的？",
+    "expected_keywords": [],
+    "expected_answer": "训练过程中最小化的是均方误差（MSE）损失函数。最终预测值是所有IMF（本征模态函数）预测值的总和。",
+    "gold_docs": [
+      "doc_0e785f3f"
+    ],
+    "gold_chunks": [
+      "doc_0e785f3f_chunk_1014"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "为什么文中强调VMD的分解性能高度依赖于参数选择？为了解决该问题并验证整体模型的有效性，本文构建了怎样的参数优化、预测合成与效果检验流程？",
+    "expected_keywords": [],
+    "expected_answer": "因为适当的参数优化是确保VMD分解准确性的关键。为此，本文引入遗传算法（GA）进行参数优化配置；将原序列分解为多个IMF后分别预测，再将所有IMF的预测值相加得到最终输出；最后使用MAE、SMAPE、RMSE量化预测误差，并采用M-DM统计检验验证模型性能是否显著优于对比模型，同时从多个维度进行鲁棒性综合评估。",
+    "gold_docs": [
+      "doc_0e785f3f"
+    ],
+    "gold_chunks": [
+      "doc_0e785f3f_chunk_1006",
+      "doc_0e785f3f_chunk_1014"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "在预训练语言模型的发展中，BERT模型主要沿用了Transformer架构中的哪一部分？并采用了什么预训练任务来提升其在自然语言理解任务上的表现？",
+    "expected_keywords": [],
+    "expected_answer": "BERT模型沿用了Transformer架构中的Encoder部分，通过将Encoder层进行堆叠，并引入了掩码语言模型（Masked Language Model，MLM）作为预训练任务。",
+    "gold_docs": [
+      "doc_1329d070"
+    ],
+    "gold_chunks": [
+      "doc_1329d070_chunk_1083"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "针对能力强大的大语言模型（LLM），有监督微调（SFT）的主要训练目标是什么？",
+    "expected_keywords": [],
+    "expected_answer": "让模型从多种类型、多种风格的指令中获得泛化的指令遵循能力，也就是能够理解并回复用户的指令。",
+    "gold_docs": [
+      "doc_1329d070"
+    ],
+    "gold_chunks": [
+      "doc_1329d070_chunk_1125"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "对比T5模型与LLaMA模型的结构，T5模型的Decoder中额外包含了哪种注意力结构？而LLaMA模型的Decoder block内部首先使用的是哪种注意力层？",
+    "expected_keywords": [],
+    "expected_answer": "T5模型的Decoder中包含了Encoder-Decoder Attention结构，用于捕捉输入和输出序列之间的依赖关系；LLaMA模型的Decoder block内部首先使用的是masked self-attention层。",
+    "gold_docs": [
+      "doc_1329d070"
+    ],
+    "gold_chunks": [
+      "doc_1329d070_chunk_1098",
+      "doc_1329d070_chunk_1106"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "本书的实战应用部分（第5章至第7章）主要引导读者完成哪些核心实践任务？在使用Transformers框架加载预训练模型时，通常调用哪个方法？",
+    "expected_keywords": [],
+    "expected_answer": "实战应用部分引导读者基于PyTorch搭建LLM实现预训练和微调全流程、基于Transformers框架高效实现训练过程，以及介绍LLM评测、RAG和智能体等应用。加载预训练模型通常调用from_pretrained方法。",
+    "gold_docs": [
+      "doc_1329d070"
+    ],
+    "gold_chunks": [
+      "doc_1329d070_chunk_1046",
+      "doc_1329d070_chunk_1194"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "以GPT和LLaMA为代表的Decoder-Only架构模型在预训练阶段主要依赖什么核心任务？这种训练方式会导致模型在初始状态下出现什么典型缺陷？为了克服该缺陷并激发模型的实际应用能力，业界通常采用什么技术，其对训练数据的构建有何核心要求？",
+    "expected_keywords": [],
+    "expected_answer": "预训练阶段主要依赖经典的CLM任务，即训练模型预测下一个token的能力。这会导致模型像“死板背书”一样，虽然能流畅接下文，但不知道问题本身的含义，无法与用户指令或下游任务适配。为了克服该缺陷，通常采用SFT（有监督微调/指令微调）技术，其核心要求是收集大量类别各异的用户指令和对应回复对模型进行训练，并在多种任务指令上覆盖相对较大的数据量，以训练模型的泛化指令遵循能力。",
+    "gold_docs": [
+      "doc_1329d070"
+    ],
+    "gold_chunks": [
+      "doc_1329d070_chunk_1083",
+      "doc_1329d070_chunk_1106",
+      "doc_1329d070_chunk_1125"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "MoR（Mixture-of-Recursions）框架是如何在单一架构中同时实现参数效率和自适应计算的？",
+    "expected_keywords": [],
+    "expected_answer": "MoR通过跨递归步骤复用共享的层堆栈来实现参数效率，同时利用轻量级路由器为单个令牌动态分配不同的递归深度，从而实现自适应计算。",
+    "gold_docs": [
+      "doc_87ffc739"
+    ],
+    "gold_chunks": [
+      "doc_87ffc739_chunk_1274"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "在评估路由器动态分配性能时，文中是如何定义验证数据集上测量的“dead tokens”的？",
+    "expected_keywords": [],
+    "expected_answer": "“dead tokens”指的是在一个批次（batch）中从未被最终递归步骤选中的令牌。",
+    "gold_docs": [
+      "doc_87ffc739"
+    ],
+    "gold_chunks": [
+      "doc_87ffc739_chunk_1293"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "传统的KV缓存在长上下文场景下面临什么主要挑战？MoR提出的互补方案是如何解决这一挑战并提升预填充（prefill）阶段效率的？",
+    "expected_keywords": [],
+    "expected_answer": "传统KV缓存保留这些张量会迅速使GPU内存饱和。MoR允许在后续递归步骤中重用早期递归生成的KV缓存，进一步降低内存消耗，并使得预填充阶段只需运行第一次递归，从而为超长上下文（如超一百万token）带来显著加速。",
+    "gold_docs": [
+      "doc_87ffc739"
+    ],
+    "gold_chunks": [
+      "doc_87ffc739_chunk_1274",
+      "doc_87ffc739_chunk_1300"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "在token-choice路由策略中，使用显式平衡损失（balancing loss）与无损失训练相比有何优势？同时，“Middle”参数共享策略在模型性能提升上表现出什么特点？",
+    "expected_keywords": [],
+    "expected_answer": "显式平衡损失能显著降低MaxVio指标，是实现更稳定路由的优选方案。“Middle”参数共享策略在所有设置中均展现出优越性能，并显著优于相同初始化方式但不带递归的缩减基线模型。",
+    "gold_docs": [
+      "doc_87ffc739"
+    ],
+    "gold_chunks": [
+      "doc_87ffc739_chunk_1293",
+      "doc_87ffc739_chunk_1350"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "综合MoR框架的缓存机制与路由器设计，解释为何预填充阶段只需运行第一次递归即可大幅提速？此外，该框架在训练过程中针对异构专家的路由分配面临什么主要挑战？",
+    "expected_keywords": [],
+    "expected_answer": "因为MoR重用了早期递归生成的KV缓存，消除了二次时间复杂度的重新计算，从而在预填充阶段只需执行第一次递归即可大幅提升速度。但在动态路由分配中，模型经常难以在异构专家之间平衡负载，即使在近一半的训练步骤中也会遇到此挑战。",
+    "gold_docs": [
+      "doc_87ffc739"
+    ],
+    "gold_chunks": [
+      "doc_87ffc739_chunk_1274",
+      "doc_87ffc739_chunk_1293",
+      "doc_87ffc739_chunk_1300"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "在使用 docker pull 拉取 Ubuntu 镜像时，官方文档推荐的最佳实践是什么？为什么不建议直接使用 latest 标签？",
+    "expected_keywords": [],
+    "expected_answer": "推荐使用具体的版本标签（如 ubuntu:24.04）。因为若使用 ubuntu 或 ubuntu:latest，镜像内容可能在某个时刻发生变化。",
+    "gold_docs": [
+      "doc_de6c0550"
+    ],
+    "gold_chunks": [
+      "doc_de6c0550_chunk_242"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "如何使用官方提供的 registry 镜像快速启动一个私有仓库？请给出推荐的 Docker 运行命令。",
+    "expected_keywords": [],
+    "expected_answer": "推荐命令为：docker run -d -p 5000:5000 --restart=always --name registry registry:2",
+    "gold_docs": [
+      "doc_de6c0550"
+    ],
+    "gold_chunks": [
+      "doc_de6c0550_chunk_337"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "当容器出现无法解析域名或无法通过容器名相互通信的问题时，分别应如何排查和解决？",
+    "expected_keywords": [],
+    "expected_answer": "无法解析域名时：1. 检查宿主机 /etc/resolv.conf 是否配置了本地回环地址（如 127.0.0.53）；2. 尝试运行容器时手动指定 DNS（如 --dns 8.8.8.8）；3. 检查防火墙是否拦截 UDP 53 端口。无法通过容器名通信时：原因是使用了默认的 bridge 网络（历史遗留设计不支持 DNS 解析），解决方法是创建并使用自定义网络。",
+    "gold_docs": [
+      "doc_de6c0550"
+    ],
+    "gold_chunks": [
+      "doc_de6c0550_chunk_517"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "在 Docker 安全与权限配置中，为什么文档明确警告不要在脚本中直接使用 -p 参数传递凭证，同时也建议避免使用 sudo？请分别说明原因。",
+    "expected_keywords": [],
+    "expected_answer": "避免使用 -p 参数是因为它会导致密码或 Token 直接暴露在系统的命令历史、进程列表和终端输出中；避免使用 sudo 是因为其具有不可预期的 TTY 和信号转发行为，容易引发问题。",
+    "gold_docs": [
+      "doc_de6c0550"
+    ],
+    "gold_chunks": [
+      "doc_de6c0550_chunk_335",
+      "doc_de6c0550_chunk_968"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "如果需要在 Apple Silicon Mac 上拉取并运行一个仅支持 x86 架构的 Nginx 镜像，且要求容器以非 root 用户身份执行。请说明应如何组合使用 docker pull 和 docker run 命令的参数？此外，从进程管理和信号处理的角度，解释为什么容器内切换用户强烈推荐使用 gosu 而不是 su/sudo？",
+    "expected_keywords": [],
+    "expected_answer": "拉取镜像时应使用 --platform linux/amd64 参数指定平台架构；运行容器时应添加 -u 或 --user 参数指定非 root 用户。推荐使用 gosu 的原因是：su/sudo 需要 TTY 环境且信号传递不正确，并会生成子进程；而 gosu 不需要 TTY，能正确传递信号，并通过 exec 替换当前进程，更符合容器单进程运行要求。",
+    "gold_docs": [
+      "doc_de6c0550"
+    ],
+    "gold_chunks": [
+      "doc_de6c0550_chunk_242",
+      "doc_de6c0550_chunk_443"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "标准的Transformer自注意力机制在时间和空间复杂度上相对于序列长度是多少？",
+    "expected_keywords": [],
+    "expected_answer": "O(n^2)",
+    "gold_docs": [
+      "doc_65b5e468"
+    ],
+    "gold_chunks": [
+      "doc_65b5e468_chunk_1247"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "在下游任务实验中，Linformer模型在哪些具体的自然语言理解任务上进行了微调评估？",
+    "expected_keywords": [],
+    "expected_answer": "IMDB、SST-2（情感分类）、QNLI（自然语言推理）和QQP（文本相似度）。",
+    "gold_docs": [
+      "doc_65b5e468"
+    ],
+    "gold_chunks": [
+      "doc_65b5e468_chunk_1261"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "文中通过对RoBERTa模型进行谱分析来证明自注意力矩阵的低秩特性，具体观察到了哪些关键现象？",
+    "expected_keywords": [],
+    "expected_answer": "矩阵P呈现出明显的长尾谱分布，大部分信息可通过前几个最大的奇异值恢复；且高层网络的谱分布比低层更偏斜，意味着高层信息更集中在最大奇异值上，秩更低。",
+    "gold_docs": [
+      "doc_65b5e468"
+    ],
+    "gold_chunks": [
+      "doc_65b5e468_chunk_1253"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "论文指出稀疏注意力和梯度检查点等现有优化技术存在哪些主要局限性？本文提出的新方法在n=512且k=128时取得了怎样的推理效率提升？",
+    "expected_keywords": [],
+    "expected_answer": "稀疏注意力在获得有限加速的同时伴随较大的性能下降（如2%下降）；梯度检查点技术以时间换取内存，无法加速推理。新方法在n=512、k=128时推理速度提升了1.5倍，并允许最大批次大小增加1.7倍。",
+    "gold_docs": [
+      "doc_65b5e468"
+    ],
+    "gold_chunks": [
+      "doc_65b5e468_chunk_1253",
+      "doc_65b5e468_chunk_1263"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "结合标准Transformer的复杂度瓶颈与自注意力矩阵的谱分析结果，说明Linformer实现线性复杂度的核心原理，并概括其在下游任务微调实验中的性能表现。",
+    "expected_keywords": [],
+    "expected_answer": "标准Transformer自注意力复杂度为O(n^2)。研究发现上下文映射矩阵P是低秩的（信息集中在少数大奇异值上）。Linformer利用该低秩特性近似自注意力机制，将复杂度降至O(n)。在IMDB、SST-2等下游任务微调中，其性能指标与RoBERTa-base等标准Transformer基线模型基本持平，证明了其在降低计算成本的同时保持了模型性能。",
+    "gold_docs": [
+      "doc_65b5e468"
+    ],
+    "gold_chunks": [
+      "doc_65b5e468_chunk_1247",
+      "doc_65b5e468_chunk_1253",
+      "doc_65b5e468_chunk_1263"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "在 Git 中，如果一个已跟踪文件的内容发生了变化但尚未放入暂存区，它会出现在 `git status` 输出的哪个分类下？要将其更新放入暂存区需要运行什么命令？",
+    "expected_keywords": [],
+    "expected_answer": "出现在“Changes not staged for commit”这行下面。需要运行 git add 命令。",
+    "gold_docs": [
+      "doc_eddcab95"
+    ],
+    "gold_chunks": [
+      "doc_eddcab95_chunk_1469"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "Git 允许使用简短的 SHA-1 散列值来指定提交，但提供的字符数量最少不能少于几个？并且需要满足什么条件才能避免歧义？",
+    "expected_keywords": [],
+    "expected_answer": "字符数量不得少于 4 个。需要满足没有歧义的条件，即当前对象数据库中没有其它对象以这段 SHA-1 开头。",
+    "gold_docs": [
+      "doc_eddcab95"
+    ],
+    "gold_chunks": [
+      "doc_eddcab95_chunk_1696"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "在服务器上配置 Smart HTTP 协议时，通常需要启用哪个 Git 自带的 CGI 脚本？该脚本如何决定使用智能模式还是哑模式与客户端通信？",
+    "expected_keywords": [],
+    "expected_answer": "需要启用 git-http-backend 脚本。该脚本会读取客户端发送的请求路径和头部信息，判断客户端是否支持 HTTP 通信（版本不低于 1.6.6），如果支持则使用智能模式，否则回落到哑模式。",
+    "gold_docs": [
+      "doc_eddcab95"
+    ],
+    "gold_chunks": [
+      "doc_eddcab95_chunk_1570"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "当克隆一个设置了 svn:ignore 属性的 Subversion 仓库时，Git 提供了哪两个命令来帮助处理忽略文件？它们各自的作用是什么？",
+    "expected_keywords": [],
+    "expected_answer": "提供了 git svn create-ignore 和 git svn show-ignore 两个命令。前者会自动创建对应的 .gitignore 文件以便下次提交包含它们；后者会将需要放入 .gitignore 的内容打印到标准输出，可重定向到项目的例外文件中。",
+    "gold_docs": [
+      "doc_eddcab95"
+    ],
+    "gold_chunks": [
+      "doc_eddcab95_chunk_1882"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "如果需要在不重建完整历史记录（即不改变原有提交 SHA-1 值）的情况下，用另一个提交“假装”替换历史中的某个提交，应该使用什么命令？这与用于根据规则重写大量提交记录的命令有何主要区别？",
+    "expected_keywords": [],
+    "expected_answer": "应该使用 replace 命令。主要区别在于：replace 命令只是在遇到指定对象时假装它是其他对象，不会真正替换历史中的每一个提交（因为历史来源会影响 SHA-1 值），从而避免重建完整历史；而 git filter-branch 命令会根据规则实际重写大量的提交记录，改变历史并生成新的 SHA-1 值。",
+    "gold_docs": [
+      "doc_eddcab95"
+    ],
+    "gold_chunks": [
+      "doc_eddcab95_chunk_1819",
+      "doc_eddcab95_chunk_2007"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "《中华人民共和国数据安全法》自何时起正式施行？",
+    "expected_keywords": [],
+    "expected_answer": "自2021年9月1日起施行。",
+    "gold_docs": [
+      "doc_929585c2"
+    ],
+    "gold_chunks": [
+      "doc_929585c2_chunk_2013"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "国家在支持开发利用数据提升公共服务智能化水平时，应当充分考虑哪些特定群体的需求以避免对其日常生活造成障碍？",
+    "expected_keywords": [],
+    "expected_answer": "应当充分考虑老年人、残疾人的需求。",
+    "gold_docs": [
+      "doc_929585c2"
+    ],
+    "gold_chunks": [
+      "doc_929585c2_chunk_2019"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "任何个人和组织对违反本法规定的行为享有什么权利？收到投诉举报的部门应如何处理？同时，组织或个人收集数据时应遵循什么原则？",
+    "expected_keywords": [],
+    "expected_answer": "有权向有关主管部门投诉、举报；收到投诉、举报的部门应当及时依法处理。应当采取合法、正当的方式，不得窃取或者以其他非法方式获取数据。",
+    "gold_docs": [
+      "doc_929585c2"
+    ],
+    "gold_chunks": [
+      "doc_929585c2_chunk_2018",
+      "doc_929585c2_chunk_2022"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "国家在数据交易方面建立了怎样的管理制度？若从事数据交易中介服务的机构未履行法定义务，有关主管部门可对其处以哪些行政处罚？",
+    "expected_keywords": [],
+    "expected_answer": "国家建立健全数据交易管理制度，规范数据交易行为，培育数据交易市场。由有关主管部门责令改正，没收违法所得，处违法所得一倍以上十倍以下罚款，没有违法所得或者违法所得不足十万元的，处十万元以上一百万元以下罚款，并可以责令暂停相关业务、停业整顿、吊销相关业务许可证或者吊销营业执照；对直接负责的主管人员和其他直接责任人员处一万元以上十万元以下罚款。",
+    "gold_docs": [
+      "doc_929585c2"
+    ],
+    "gold_chunks": [
+      "doc_929585c2_chunk_2019",
+      "doc_929585c2_chunk_2026"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "根据该法，国家在统筹数据安全与发展方面坚持何种核心原则？对于境内收集和产生的重要数据出境，关键信息基础设施运营者与其他数据处理者在安全管理适用上有何区别？若未经批准擅自向外国司法或执法机构提供数据，将面临怎样的法律责任？",
+    "expected_keywords": [],
+    "expected_answer": "核心原则为：坚持以数据开发利用和产业发展促进数据安全，以数据安全保障数据开发利用和产业发展。区别在于：关键信息基础设施的运营者重要数据出境安全管理适用《中华人民共和国网络安全法》的规定；其他数据处理者重要数据出境安全管理办法由国家网信部门会同国务院有关部门制定。法律责任：由有关主管部门给予警告，可以并处十万元以上一百万元以下罚款，对直接负责的主管人员和其他直接责任人员可以处一万元以上十万元以下罚款；造成严重后果的，处一百万元以上五百万元以下罚款，并可以责令暂停相关业务、停业整顿、吊销相关业务许可证或者吊销营业执照，对直接负责的主管人员和其他直接责任人员处五万元以上五十万元以下罚款。",
+    "gold_docs": [
+      "doc_929585c2"
+    ],
+    "gold_chunks": [
+      "doc_929585c2_chunk_2018",
+      "doc_929585c2_chunk_2022",
+      "doc_929585c2_chunk_2026"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "在LightGBM模型的贝叶斯超参数优化过程中，经过15次迭代后得到的最大优化目标值（AUC值）是多少？该最优结果出现在第几次迭代？",
+    "expected_keywords": [],
+    "expected_answer": "最大优化目标值（AUC值）为0.5151，出现在第2次迭代。",
+    "gold_docs": [
+      "doc_04e185b3"
+    ],
+    "gold_chunks": [
+      "doc_04e185b3_chunk_2083"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "在LSTM记忆门结构中，输入门的Sigmoid函数和tanh神经网络层分别起到什么作用？",
+    "expected_keywords": [],
+    "expected_answer": "Sigmoid函数用来接收上一时刻隐状态和当前时刻输入作为输入，输出0到1的值来决定哪些信息需要被更新；tanh神经网络层则是将上一时刻隐状态和当前时刻输入整合创建出一个新的状态候选信息，并将该信息更新至记忆单元中。",
+    "gold_docs": [
+      "doc_04e185b3"
+    ],
+    "gold_chunks": [
+      "doc_04e185b3_chunk_2066"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "为了解决以往研究中仅依赖技术因子的局限性，本文在特征输入上引入了哪些新变量？采用了什么模型组合来平衡“维度扩展”和“维度灾难”，并最终筛选出多少个特征用于预测？",
+    "expected_keywords": [],
+    "expected_answer": "引入了与沪深300股指期货密切相关的金融市场因素；采用了GA-LightGBM组合模型来平衡“维度扩展”和“维度灾难”；最终筛选出39个最优特征集。",
+    "gold_docs": [
+      "doc_04e185b3"
+    ],
+    "gold_chunks": [
+      "doc_04e185b3_chunk_2042",
+      "doc_04e185b3_chunk_2083"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "贝叶斯优化算法所基于的高斯过程回归中，协方差函数（核函数）的核心作用是什么？在模型训练采用的时序交叉验证中，验证集的样本数量和推移策略是如何设定的？",
+    "expected_keywords": [],
+    "expected_answer": "协方差函数（核函数）用来描述函数值之间的相关性；在时序交叉验证中，验证集的大小保持不变，但需要往后推移。",
+    "gold_docs": [
+      "doc_04e185b3"
+    ],
+    "gold_chunks": [
+      "doc_04e185b3_chunk_2057",
+      "doc_04e185b3_chunk_2083"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "本文如何通过模型构建、参数优化与回测结果综合验证基于贝叶斯优化的GA-LightGBM策略的有效性？请结合优化目标、策略与基准收益曲线的对比关系，以及阿尔法（Alpha）和最大回撤指标进行说明。",
+    "expected_keywords": [],
+    "expected_answer": "有效性验证体现在：1. 优化目标上，以验证集中平均AUC值最高（达0.5151）作为贝叶斯超参数优化的目标；2. 收益曲线上，策略收益曲线几乎一直位于基准收益曲线上方且越到后期两者差异越大，表明模型能跑赢大盘指数；3. 风险收益指标上，阿尔法值为0.4740说明具备获取超额收益的能力，最大回撤控制在9.23%体现了较好的风险控制。综合表明该模型能有效识别市场机会进行有效交易，在降低风险的同时提高投资收益。",
+    "gold_docs": [
+      "doc_04e185b3"
+    ],
+    "gold_chunks": [
+      "doc_04e185b3_chunk_2042",
+      "doc_04e185b3_chunk_2083",
+      "doc_04e185b3_chunk_2092"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  },
+  {
+    "question": "在3D Gaussian Splatting技术中，二维图像中每个像素的颜色是如何计算得出的？",
+    "expected_keywords": [],
+    "expected_answer": "通过混合（blending）覆盖该像素的N个已排序的3D高斯点来计算。",
+    "gold_docs": [
+      "doc_7b6dbc14"
+    ],
+    "gold_chunks": [
+      "doc_7b6dbc14_chunk_2118"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "在实验的实现细节中，作者分别使用了什么模型来提取CLIP特征和生成动态语义描述？",
+    "expected_keywords": [],
+    "expected_answer": "使用OpenCLIP ViT-B/16模型提取CLIP特征；使用Qwen2-VL-7B模型作为骨干多模态大语言模型（MLLM）来生成随时间变化的描述（captions）。",
+    "gold_docs": [
+      "doc_7b6dbc14"
+    ],
+    "gold_chunks": [
+      "doc_7b6dbc14_chunk_2125"
+    ],
+    "category": "auto",
+    "difficulty": "easy",
+    "tags": []
+  },
+  {
+    "question": "3D Gaussian Splatting技术已被广泛应用于哪些领域？本文提出的方法在动态物体处理方面相比其他方法展现出了怎样的优势？",
+    "expected_keywords": [],
+    "expected_answer": "3D-GS广泛应用于人体重建、3D编辑、网格提取和自动驾驶等领域。本文方法在动态物体上取得了最高的mIoU和mAcc分数，证明了其强大的分割性能，而其他方法则难以捕捉物体的运动和形状变化，导致在动态物体上表现较差。",
+    "gold_docs": [
+      "doc_7b6dbc14"
+    ],
+    "gold_chunks": [
+      "doc_7b6dbc14_chunk_2118",
+      "doc_7b6dbc14_chunk_2128"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "模型是如何确定每个高斯点随时间变化的权重系数的？这一设计如何帮助模型在时间无关查询任务中取得领先性能？",
+    "expected_keywords": [],
+    "expected_answer": "模型采用一个MLP解码器，输入来自Hexplane的时空特征来预测反映语义状态时间演进的权重系数。该设计确保状态变形网络能够适应空间和时间上下文，实现平滑一致的状态变化，从而使模型在时间无关查询中取得最高的mIoU和mAcc分数。",
+    "gold_docs": [
+      "doc_7b6dbc14"
+    ],
+    "gold_chunks": [
+      "doc_7b6dbc14_chunk_2125",
+      "doc_7b6dbc14_chunk_2128"
+    ],
+    "category": "auto",
+    "difficulty": "medium",
+    "tags": []
+  },
+  {
+    "question": "结合3D高斯溅射的渲染原理、时空权重预测机制以及动态数据集的实验对比，深入分析本文方法为何能够有效克服其他方法在动态场景中捕捉物体运动和形变困难的缺陷？",
+    "expected_keywords": [],
+    "expected_answer": "3D-GS通过投影3D高斯分布表示复杂场景，但原生难以处理动态变化。本文通过引入基于Hexplane时空特征的MLP解码器来预测权重系数，使状态变形网络能同时适应空间和时间上下文，实现平滑一致的状态演进。这种机制让模型能够精准捕捉物体的运动和形状变化，因此在动态数据集上取得了最高的mIoU和mAcc，而其他仅依赖静态或简单动态建模的方法则难以应对复杂的时空形变，导致性能下降。",
+    "gold_docs": [
+      "doc_7b6dbc14"
+    ],
+    "gold_chunks": [
+      "doc_7b6dbc14_chunk_2118",
+      "doc_7b6dbc14_chunk_2125",
+      "doc_7b6dbc14_chunk_2128"
+    ],
+    "category": "auto",
+    "difficulty": "hard",
+    "tags": []
+  }
+]

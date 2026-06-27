@@ -1,4 +1,4 @@
-﻿# core/memory_system/config.py
+# core/memory/long_term/config.py
 """记忆系统的配置（从 settings.py 读取，集中一处）。"""
 from config.settings import settings
 

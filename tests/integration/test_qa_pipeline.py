@@ -1,4 +1,4 @@
-﻿"""QA 管线集成测试 — 无需真实服务，验证组件协作行为"""
+"""QA 管线集成测试 — 无需真实服务，验证组件协作行为"""
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch, PropertyMock
@@ -142,6 +142,10 @@ class TestConfigIntegration:
             EVAL_JUDGE_PROMPT,
             QA_TEMPLATE,
             CONDENSE_TEMPLATE,
+            LLM_RELEVANCE_PROMPT,
+            FAITHFULNESS_PROMPT,
+            ANSWER_RELEVANCE_PROMPT,
+            CONTEXT_RELEVANCE_PROMPT,
         )
         assert all([
             BASE_REACT_PROMPT,
@@ -157,6 +161,10 @@ class TestConfigIntegration:
             EVAL_JUDGE_PROMPT,
             QA_TEMPLATE,
             CONDENSE_TEMPLATE,
+            LLM_RELEVANCE_PROMPT,
+            FAITHFULNESS_PROMPT,
+            ANSWER_RELEVANCE_PROMPT,
+            CONTEXT_RELEVANCE_PROMPT,
         ])
 
     def test_prompts_format(self):

@@ -1,4 +1,5 @@
-﻿# core/retrievers/base.py
+# -*- coding: utf-8 -*-
+# core/retrievers/base.py
 """
 【核心检索器：DirectQdrantRetriever】
 

@@ -1,4 +1,4 @@
-﻿# chains/source_detection.py
+# chains/source_detection.py
 """
 【来源检测模块：从用户问题中识别目标文档 + 会话级多文档聚焦管理】
 
@@ -191,7 +191,8 @@ def resolve_doc_ids_only(source_filter) -> Optional[Set[str]]:
         reg = get_doc_id_registry()
         doc_ids = reg.lookup_doc_ids(s)
         return doc_ids if doc_ids else None
-    except Exception:
+    except Exception as e:
+        logger.debug(f"来源查找失败: {e}")
         return None
 
 

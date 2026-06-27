@@ -1,4 +1,4 @@
-﻿# core/context/builder.py
+# core/context/builder.py
 """GSSC 上下文构建器 — Gather → Select → Structure → Compress
 
 借鉴 HelloAgents 的 GSSC 模式，将 ad-hoc 上下文拼接替换为结构化、可预算的构建流程。
@@ -13,7 +13,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from utils.logger import logger
 from config.prompts import OUTPUT_INSTRUCTION
 
-from .types import ContextPacket, ContextConfig, _tokenize_chinese, _count_tokens
+from .types import ContextPacket, ContextConfig, _tokenize_chinese
+from utils.token_utils import count_tokens as _count_tokens
 
 # GSSC 结构化模板
 _GSSC_TEMPLATE = ChatPromptTemplate.from_messages([

@@ -1,4 +1,4 @@
-﻿"""缓存模块单元测试 — AsyncTTLCache + AsyncRedisCache"""
+"""缓存模块单元测试 — AsyncTTLCache + AsyncRedisCache"""
 
 import json
 import time

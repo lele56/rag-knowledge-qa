@@ -1,4 +1,4 @@
-﻿# core/infrastructure/vector_store.py
+# core/infrastructure/vector_store.py
 from typing import List, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import Distance, VectorParams, PayloadSchemaType
@@ -143,8 +143,8 @@ def add_documents_in_batches(store, docs) -> int:
                 import torch
                 if torch.cuda.is_available():
                     torch.cuda.empty_cache()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"GPU 缓存清理失败: {e}")
 
             done = min(i + EMBED_BATCH, total)
             elapsed = _time.time() - t0
@@ -208,8 +208,8 @@ def add_documents_in_batches(store, docs) -> int:
     try:
         info = client.get_collection(settings.QDRANT_COLLECTION_NAME)
         logger.info(f"📊 当前 collection 总点数: {info.points_count}")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"获取 collection 信息失败: {e}")
 
     return added
 
@@ -323,8 +323,8 @@ def get_qdrant_status() -> dict:
         try:
             info = client.get_collection(settings.QDRANT_COLLECTION_NAME)
             points_count = info.points_count if info else 0
-        except Exception:
-            # collection 不存在 → Qdrant 本身可用，只是没有数据
+        except Exception as e:
+            logger.debug(f"获取 collection 信息失败: {e}")
             points_count = 0
         return {
             "ok": True,
@@ -332,11 +332,12 @@ def get_qdrant_status() -> dict:
             "msg": f"✅ Qdrant 正常（{points_count} 条知识）",
         }
 
+    result = _try_check()
+    if result["ok"]:
+        return result
+
+    _client = None
     try:
         return _try_check()
-    except Exception:
-        _client = None
-        try:
-            return _try_check()
-        except Exception as e:
-            return {"ok": False, "points": 0, "msg": f"❌ Qdrant 不可用: {type(e).__name__}"}
+    except Exception as e:
+        return {"ok": False, "points": 0, "msg": f"❌ Qdrant 不可用: {type(e).__name__}"}

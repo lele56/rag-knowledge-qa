@@ -1,4 +1,4 @@
-﻿# core/retrievers/bm25.py
+# core/retrievers/bm25.py
 """BM25 关键词检索器：基于 langchain_community 的 BM25Retriever。
 
 与向量检索互补，不会漏掉含精确关键词的内容。
@@ -58,7 +58,7 @@ class BM25Retriever(LangChainBM25):
         tokenized = [_tokenize(d.page_content) for d in docs]
         bm25 = BM25Okapi(tokenized)
         retriever = cls(
-            bm25=bm25,
+            vectorizer=bm25,
             docs=docs,
             k=k,
             **kwargs
@@ -69,7 +69,7 @@ class BM25Retriever(LangChainBM25):
 
     def _get_relevant_documents(self, query: str, **kwargs) -> List[Document]:
         q_tokens = _tokenize(query)
-        doc_scores = self.bm25.get_scores(q_tokens)
+        doc_scores = self.vectorizer.get_scores(q_tokens)
 
         sorted_pairs = sorted(
             enumerate(zip(self.docs, doc_scores)),

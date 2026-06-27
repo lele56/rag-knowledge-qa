@@ -1,4 +1,4 @@
-﻿# core/memory_system/working.py
+# core/memory/long_term/working.py
 """
 工作记忆 (Working Memory)。
 
@@ -12,6 +12,7 @@ from typing import List, Dict, Any, Tuple
 
 from .scoring import score_working
 from .config import cfg
+from utils.logger import logger
 
 
 # ---------------------------------------------------------------------------
@@ -34,11 +35,12 @@ def _lightweight_similarity(query: str, text: str) -> float:
 def _extract_recent_dialogs() -> List[Dict[str, Any]]:
     """从记忆系统中提取最近对话，格式化为 [{question, answer, ts}]。"""
     try:
-        from core.memory import get_memory
+        from core.memory.short_term import get_memory
         mem = get_memory()
         variables = mem.load_memory_variables({})
         messages = variables.get("chat_history", [])
-    except Exception:
+    except Exception as e:
+        logger.warning(f"提取对话历史失败: {e}")
         return []
 
     results = []
@@ -49,7 +51,8 @@ def _extract_recent_dialogs() -> List[Dict[str, Any]]:
         try:
             content = getattr(msg, "content", None) or str(msg)
             msg_type = type(msg).__name__
-        except Exception:
+        except Exception as e:
+            logger.debug(f"消息解析失败: {e}")
             continue
 
         if "Human" in msg_type or "user" in msg_type.lower():

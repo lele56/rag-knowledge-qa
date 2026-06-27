@@ -37,16 +37,19 @@ class EvalRunner:
         retriever_fn: Optional[Callable] = None,
         qa_fn: Optional[Callable] = None,
         llm: Any = None,
+        use_llm_relevance: bool = False,
     ):
         """
         Args:
             retriever_fn: 检索函数 (query: str, top_k: int) -> List[Document]
             qa_fn: 问答函数 (question: str) -> str
             llm: LLM 实例（用于 LLM-as-judge 打分）
+            use_llm_relevance: 检索评估是否使用 LLM 判断相关性（默认只用关键词）
         """
         self._retriever_fn = retriever_fn
         self._qa_fn = qa_fn
         self._llm = llm
+        self._use_llm_relevance = use_llm_relevance
 
     # ---------- 检索评估 ----------
 
@@ -63,9 +66,18 @@ class EvalRunner:
             return RetrievalResult(question=case.question, retrieved_count=0)
         latency_ms = (time.time() - t0) * 1000
 
-        result = RetrievalMetrics.evaluate(
-            docs, case.expected_keywords, latency_ms=latency_ms, question=case.question
-        )
+        if self._use_llm_relevance and self._llm:
+            result = RetrievalMetrics.evaluate_with_llm(
+                self._llm, docs, case.expected_keywords,
+                question=case.question, latency_ms=latency_ms,
+            )
+        else:
+            result = RetrievalMetrics.evaluate(
+                docs, case.expected_keywords,
+                gold_chunks=case.gold_chunks,
+                gold_docs=case.gold_docs,
+                latency_ms=latency_ms, question=case.question
+            )
         return result
 
     def evaluate_retrieval(self, testset: TestSet, top_k: int = 5) -> EvalSummary:
@@ -79,7 +91,7 @@ class EvalRunner:
             results.append(r)
             latencies.append(r.latency_ms)
 
-        summary = self._summarize_retrieval(results, latencies)
+        summary = self._summarize(results, latencies, "retrieval")
         return summary
 
     # ---------- 生成评估 ----------
@@ -109,8 +121,8 @@ class EvalRunner:
                     (d.page_content if hasattr(d, "page_content") else str(d))[:500]
                     for d in docs
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"上下文提取失败: {e}")
 
         # 3) LLM 裁判打分
         try:
@@ -138,7 +150,7 @@ class EvalRunner:
             results.append(r)
             latencies.append(r.latency_ms)
 
-        summary = self._summarize_generation(results, latencies)
+        summary = self._summarize(results, latencies, "generation")
         return summary
 
     # ---------- 端到端评估 ----------
@@ -209,25 +221,75 @@ class EvalRunner:
             "avg_tokens": sum(r.tokens_used for r in results) / n,
         }
 
-    def _summarize_retrieval(
-        self, results: List[RetrievalResult], latencies: List[float]
-    ) -> EvalSummary:
+    def _summarize(self, results: list, latencies: list[float],
+                   mode: str = "retrieval") -> EvalSummary:
+        agg = self._agg_retrieval if mode == "retrieval" else self._agg_generation
+        detail_key = "retrieval_details" if mode == "retrieval" else "generation_details"
         return EvalSummary(
             total_questions=len(results),
-            retrieval=self._agg_retrieval(results),
             performance=PerformanceMetrics.summarize(latencies),
-            retrieval_details=results,
+            **{mode: agg(results), detail_key: results},
         )
 
-    def _summarize_generation(
-        self, results: List[GenerationResult], latencies: List[float]
-    ) -> EvalSummary:
-        return EvalSummary(
-            total_questions=len(results),
-            generation=self._agg_generation(results),
-            performance=PerformanceMetrics.summarize(latencies),
-            generation_details=results,
-        )
+    # ---------- 依赖注入 ----------
+
+    # ---------- RAGAS 评估 ----------
+
+    def evaluate_ragas(self, testset: TestSet, top_k: int = 5) -> dict:
+        """RAGAS 兼容评估：Context Precision / Recall / Answer Correctness。
+
+        需要注入 retriever_fn、qa_fn、llm。
+        """
+        from evaluation.ragas_metrics import RagasMetrics
+
+        if not self._llm:
+            raise RuntimeError("RAGAS 评估需要注入 LLM，请调用 attach_llm()")
+
+        precisions: List[float] = []
+        recalls: List[float] = []
+        correctnesses: List[float] = []
+
+        for i, case in enumerate(testset, 1):
+            logger.info(f"  [{i}/{len(testset)}] RAGAS: {case.question[:50]}...")
+
+            # 检索上下文
+            contexts: List[str] = []
+            if self._retriever_fn:
+                try:
+                    docs = self._retriever_fn(case.question, top_k=top_k)
+                    contexts = [
+                        d.page_content if hasattr(d, "page_content") else str(d)
+                        for d in docs
+                    ]
+                except Exception as e:
+                    logger.warning(f"    检索失败: {e}")
+
+            # 生成答案
+            answer = ""
+            if self._qa_fn:
+                try:
+                    answer = self._qa_fn(case.question)
+                except Exception as e:
+                    logger.warning(f"    生成失败: {e}")
+
+            # 参考答案
+            ground_truth = getattr(case, "ground_truth", "") or ""
+
+            # RAGAS 指标
+            metrics = RagasMetrics.evaluate(
+                self._llm, case.question, answer, contexts, ground_truth
+            )
+            precisions.append(metrics["context_precision"])
+            if ground_truth:
+                recalls.append(metrics["context_recall"])
+                correctnesses.append(metrics["answer_correctness"])
+
+        n = len(testset)
+        return {
+            "context_precision": sum(precisions) / n if precisions else 0,
+            "context_recall": sum(recalls) / len(recalls) if recalls else 0,
+            "answer_correctness": sum(correctnesses) / len(correctnesses) if correctnesses else 0,
+        }
 
     # ---------- 依赖注入 ----------
 
@@ -241,4 +303,9 @@ class EvalRunner:
 
     def attach_llm(self, llm: Any) -> "EvalRunner":
         self._llm = llm
+        return self
+
+    def use_llm_relevance(self, enabled: bool = True) -> "EvalRunner":
+        """启用/禁用 LLM 相关性判断（检索评估）"""
+        self._use_llm_relevance = enabled
         return self

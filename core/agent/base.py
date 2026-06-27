@@ -1,4 +1,4 @@
-﻿# core/agent/base.py
+# core/agent/base.py
 """
 ReAct Agent 基类 — 思考 + 行动（Native Function Calling 版）
 
@@ -234,18 +234,15 @@ class ReActAgent(ABC):
     def _get_chat_history(self) -> str:
         return "（暂无对话历史）"
 
-    def _should_reject_finish(self) -> bool:
-        """如果从未调用过 rag_search，拒绝 Finish（用户可能只是在问有哪些文档）"""
-        for h in self._history:
-            if "rag_search[" in h:
-                return False
-        return True
-
     def _has_retrieved(self) -> bool:
         for h in self._history:
             if "rag_search[" in h:
                 return True
         return False
+
+    def _should_reject_finish(self) -> bool:
+        """如果从未调用过 rag_search，拒绝 Finish"""
+        return not self._has_retrieved()
 
     async def _call_llm(self, prompt: str = None, messages: list = None, tools: list = None, **kwargs):
         """调用 LLM。支持字符串 prompt（兼容旧接口）和 messages + tools（Function Calling）。"""

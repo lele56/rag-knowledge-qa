@@ -1,4 +1,4 @@
-﻿# core/doc/document_chunk.py
+# core/doc/document_chunk.py
 """文档分块：RecursiveCharacterTextSplitter / SemanticChunker 双模式 + 质量过滤"""
 import re
 from pathlib import Path
@@ -7,19 +7,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHea
 from langchain_core.documents import Document
 from config.settings import settings
 from utils.logger import logger
-
-
-# ---------- token 计数 ----------
-
-def count_tokens(text: str) -> int:
-    try:
-        import tiktoken
-        enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
-        return len(enc.encode(text))
-    except Exception:
-        cn = len(re.findall(r"[\u4e00-\u9fff]", text))
-        en = len(text) - cn
-        return int(cn / 1.5 + en / 4)
+from utils.token_utils import count_tokens
 
 
 # ---------- 分块 ----------

@@ -4,6 +4,7 @@ import re
 from typing import Set, Dict, Any
 from dataclasses import dataclass, field
 from datetime import datetime
+from utils.token_utils import count_tokens
 
 
 def _tokenize_chinese(text: str) -> Set[str]:
@@ -20,18 +21,6 @@ def _tokenize_chinese(text: str) -> Set[str]:
     return tokens
 
 
-def _count_tokens(text: str) -> int:
-    """使用 tiktoken 精确计数，回退到启发式估算"""
-    try:
-        import tiktoken
-        enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
-        return len(enc.encode(text))
-    except Exception:
-        chinese = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
-        other = len(text) - chinese
-        return int(chinese / 2 + other / 4)
-
-
 @dataclass
 class ContextPacket:
     """上下文信息包"""
@@ -44,7 +33,7 @@ class ContextPacket:
 
     @property
     def token_estimate(self) -> int:
-        return _count_tokens(self.content)
+        return count_tokens(self.content)
 
 
 @dataclass

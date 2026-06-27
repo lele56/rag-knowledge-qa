@@ -1,9 +1,9 @@
-﻿# core/retrievers/enhanced.py
-"""检索增强：Qdrant 格式转换 + LangChain 降噪 + 上下文标记"""
+# core/retrievers/enhanced.py
+"""检索增强：Qdrant 格式转换 + 相似度降噪 + 上下文标记"""
 import re
 from typing import Optional, Any, List
+import numpy as np
 from langchain_core.documents import Document
-from langchain_classic.retrievers.document_compressors import EmbeddingsFilter
 from core.infrastructure.embeddings import get_embeddings
 from utils.logger import logger
 
@@ -32,8 +32,35 @@ def scored_point_to_doc(point: Any) -> Optional[Document]:
 
 
 # ============================================================
-# 降噪：LangChain EmbeddingsFilter + 内容指纹去重
+# 降噪：向量相似度过滤 + 内容指纹去重
 # ============================================================
+
+def _embedding_similarity_filter(
+    docs: List[Document],
+    query: str,
+    threshold: float = 0.3,
+    k: int = 100,
+) -> List[Document]:
+    """用 embedding 余弦相似度过滤文档，替代已废弃的 langchain_classic EmbeddingsFilter。"""
+    if not docs:
+        return []
+    embeddings = get_embeddings()
+    query_vec = np.array(embeddings.embed_query(query))
+    doc_vecs = np.array(embeddings.embed_documents([d.page_content for d in docs]))
+    # 余弦相似度
+    query_norm = query_vec / (np.linalg.norm(query_vec) + 1e-8)
+    doc_norms = doc_vecs / (np.linalg.norm(doc_vecs, axis=1, keepdims=True) + 1e-8)
+    scores = np.dot(doc_norms, query_norm)
+    # 筛选 + 排序
+    indices = np.argsort(scores)[::-1]
+    result = []
+    for i in indices:
+        if scores[i] >= threshold:
+            result.append(docs[i])
+        if len(result) >= k:
+            break
+    return result
+
 
 def denoise_docs(
     docs: List[Document],
@@ -41,7 +68,7 @@ def denoise_docs(
     min_score: float = 0.3,
     focused_mode: bool = False,
 ) -> List[Document]:
-    """用 LangChain 的 EmbeddingsFilter 做相似度过滤，再指纹去重。"""
+    """向量相似度过滤 + 指纹去重。"""
     if not docs:
         return docs
     before = len(docs)
@@ -52,14 +79,9 @@ def denoise_docs(
 
     if query:
         try:
-            ef = EmbeddingsFilter(
-                embeddings=get_embeddings(),
-                similarity_threshold=min_score,
-                k=100,
-            )
-            filtered = ef.compress_documents(docs, query)
+            filtered = _embedding_similarity_filter(docs, query, threshold=min_score)
         except Exception as e:
-            logger.warning(f"EmbeddingsFilter 失败: {e}，退回原始列表")
+            logger.warning(f"相似度过滤失败: {e}，退回原始列表")
             filtered = list(docs)
     else:
         filtered = [d for d in docs if float(d.metadata.get("_score", 1.0) or 1.0) >= min_score]

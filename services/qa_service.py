@@ -30,7 +30,7 @@ def _should_auto_store_semantic(question: str, answer: str) -> bool:
         return False
     if len(answer) < 200:
         return False
-    from core.memory_system.semantic import _extract_concepts
+    from core.memory.long_term.semantic import _extract_concepts
     concepts = _extract_concepts(f"{question} {answer}")
     return len(concepts) >= 2
 
@@ -80,7 +80,7 @@ class QAService:
 
             if _should_auto_store_semantic(question, answer):
                 try:
-                    from core.memory_system.semantic import store_semantic
+                    from core.memory.long_term.semantic import store_semantic
                     store_semantic(question, answer)
                     logger.info(f"语义记忆自动存入: {question[:40]}")
                 except Exception as e:

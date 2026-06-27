@@ -147,7 +147,7 @@ class TestMemorySaveTool:
         from core.tools.rag_tools import memory_save, set_tool_deps
 
         class FakeMemory:
-            def add_to_working(self, content, source):
+            def remember(self, content, source, save_long=False):
                 pass
 
         set_tool_deps(memory_manager=FakeMemory())

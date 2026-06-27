@@ -7,6 +7,7 @@ from services.document_service import get_document_service
 from core.infrastructure.vector_store import get_qdrant_status
 from core.infrastructure.graph_store import get_graph_status
 from core.memory import clear_memory, get_chat_history_as_text
+from utils.logger import logger
 
 
 # ============================================================
@@ -39,8 +40,8 @@ def clear_memory_action() -> str:
         try:
             from core.agent.rag_agent import get_rag_agent
             get_rag_agent().clear_session_docs()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"清空会话文档失败: {e}")
         return "✅ 对话记忆已清空，会话文档列表已重置"
     except Exception as e:
         return f"❌ 清空失败: {e}"
@@ -56,7 +57,8 @@ def refresh_status():
 
     try:
         bg_errors = get_document_service().get_bg_errors()
-    except Exception:
+    except Exception as e:
+        logger.debug(f"获取后台错误失败: {e}")
         bg_errors = []
 
     bg_warn = ""
@@ -95,10 +97,3 @@ def debug_retrieve(keyword: str):
         return "\n".join(lines)
     except Exception as e:
         return f"❌ **检索报错**: `{e}`"
-
-
-def refresh_history():
-    try:
-        return get_chat_history_as_text()
-    except Exception:
-        return "_暂无对话记录_"

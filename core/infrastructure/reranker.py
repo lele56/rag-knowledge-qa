@@ -1,4 +1,4 @@
-# core/reranker.py
+# core/infrastructure/reranker.py
 """CrossEncoder 重排器：基于 langchain_classic 官方实现。"""
 import os
 from typing import List

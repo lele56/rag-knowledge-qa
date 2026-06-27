@@ -41,8 +41,8 @@ async def upload_files(files, records):
             try:
                 from core.agent.rag_agent import get_rag_agent
                 get_rag_agent().set_focus(set(focus_sources))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"设置聚焦源失败: {e}")
 
         new_records = list(records)
 
@@ -90,10 +90,9 @@ def refresh_upload_status(records):
         from core.doc.doc_id_registry import get_doc_id_registry
         reg = get_doc_id_registry()
         kb_files = set(reg.get_all_sources())
-    except Exception:
-        pass
-
-    updated = []
+    except Exception as e:
+        logger.debug(f"获取文档注册表失败: {e}")
+        kb_files = set()
     for r in records:
         name = r.get("name", "")
         if name in failed_files:

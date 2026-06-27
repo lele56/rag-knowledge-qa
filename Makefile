@@ -40,4 +40,4 @@ clean:  ## 清理缓存文件
 	@echo "清理完成!"
 
 run:  ## 启动 Gradio Web 界面
-	python main.py
+	python web/gradio_app.py

@@ -20,61 +20,53 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # 分组配置
 # ================================================================
 
-class QdrantSettings(BaseSettings):
+class _BaseConfig(BaseSettings):
+    model_config = SettingsConfigDict(extra="ignore")
+
+
+class QdrantSettings(_BaseConfig):
     url: str = Field(alias="QDRANT_URL", default="")
     api_key: str = Field(alias="QDRANT_API_KEY", default="")
     collection_name: str = Field(default="knowledge_base")
-
-    model_config = SettingsConfigDict(extra="ignore")
 
     @property
     def is_configured(self) -> bool:
         return bool(self.url and self.api_key)
 
 
-class Neo4jSettings(BaseSettings):
+class Neo4jSettings(_BaseConfig):
     uri: str = Field(alias="NEO4J_URI", default="")
     username: str = Field(alias="NEO4J_USERNAME", default="")
     password: str = Field(alias="NEO4J_PASSWORD", default="")
     database: str = Field(alias="NEO4J_DATABASE", default="neo4j")
-
-    model_config = SettingsConfigDict(extra="ignore")
 
     @property
     def is_configured(self) -> bool:
         return bool(self.uri and self.username and self.password)
 
 
-class LLMSettings(BaseSettings):
+class LLMSettings(_BaseConfig):
     api_key: str = Field(alias="OPENAI_API_KEY", default="")
     base_url: str = Field(alias="OPENAI_BASE_URL", default="https://api.openai.com/v1")
     model: str = Field(alias="LLM_MODEL", default="gpt-4o")
     request_timeout: int = Field(default=120, ge=10)
     max_retries: int = Field(default=2, ge=0, le=5)
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class EmbeddingSettings(BaseSettings):
+class EmbeddingSettings(_BaseConfig):
     model_path: str = Field(alias="EMBEDDING_MODEL_PATH", default="./models/bge-small-zh")
     use_cuda: bool = Field(alias="USE_CUDA", default=True)
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class RerankerSettings(BaseSettings):
+class RerankerSettings(_BaseConfig):
     model_path: str = Field(alias="RERANKER_MODEL_PATH", default="BAAI/bge-reranker-v2-m3")
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class RetrievalSettings(BaseSettings):
+class RetrievalSettings(_BaseConfig):
     strategy: str = Field(alias="RETRIEVAL_STRATEGY", default="simple")
     k: int = Field(alias="RETRIEVAL_K", default=8, ge=1, le=50)
     rerank_top_k: int = Field(alias="RERANK_TOP_K", default=3, ge=1, le=20)
     multi_query_count: int = Field(alias="MULTI_QUERY_COUNT", default=3, ge=1, le=10)
-
-    model_config = SettingsConfigDict(extra="ignore")
 
     @field_validator("strategy")
     @classmethod
@@ -85,13 +77,11 @@ class RetrievalSettings(BaseSettings):
         return v
 
 
-class MemorySettings(BaseSettings):
+class MemorySettings(_BaseConfig):
     window_size: int = Field(alias="MEMORY_WINDOW_SIZE", default=10, ge=1, le=50)
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class LongTermMemorySettings(BaseSettings):
+class LongTermMemorySettings(_BaseConfig):
     enabled: bool = Field(alias="LS_ENABLED", default=True)
     episodic_top_k: int = Field(alias="LS_EPISODIC_TOP_K", default=3, ge=1, le=20)
     episodic_collection: str = Field(alias="LS_EPISODIC_COLLECTION", default="episodic_memory")
@@ -104,10 +94,8 @@ class LongTermMemorySettings(BaseSettings):
     recall_total: int = Field(alias="LS_RECALL_TOTAL", default=5, ge=1, le=20)
     working_top_k: int = Field(alias="LS_WORKING_TOP_K", default=2, ge=1, le=10)
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class ChunkingSettings(BaseSettings):
+class ChunkingSettings(_BaseConfig):
     size: int = Field(alias="CHUNK_SIZE", default=1000, ge=100, le=10000)
     overlap: int = Field(alias="CHUNK_OVERLAP", default=200, ge=0, le=1000)
     token_target: int = Field(alias="CHUNK_TOKEN_TARGET", default=500, ge=50, le=2000)
@@ -119,8 +107,6 @@ class ChunkingSettings(BaseSettings):
     quality_min_heading_tokens: int = Field(default=30, ge=0, le=200)
     quality_min_body_len: int = Field(default=15, ge=0, le=200)
 
-    model_config = SettingsConfigDict(extra="ignore")
-
     @field_validator("strategy")
     @classmethod
     def validate_strategy(cls, v: str) -> str:
@@ -130,13 +116,11 @@ class ChunkingSettings(BaseSettings):
         return v
 
 
-class CacheSettings(BaseSettings):
+class CacheSettings(_BaseConfig):
     enabled: bool = Field(alias="CACHE_ENABLED", default=True)
     backend: str = Field(alias="CACHE_BACKEND", default="memory")
     ttl_seconds: int = Field(alias="CACHE_TTL_SECONDS", default=3600, ge=0)
     max_size: int = Field(alias="CACHE_MAX_SIZE", default=1000, ge=1, le=100000)
-
-    model_config = SettingsConfigDict(extra="ignore")
 
     @field_validator("backend")
     @classmethod
@@ -147,25 +131,19 @@ class CacheSettings(BaseSettings):
         return v
 
 
-class RedisSettings(BaseSettings):
+class RedisSettings(_BaseConfig):
     url: str = Field(alias="REDIS_URL", default="redis://localhost:6379/0")
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class RateLimitSettings(BaseSettings):
+class RateLimitSettings(_BaseConfig):
     enabled: bool = Field(alias="RATE_LIMIT_ENABLED", default=False)
     max_per_minute: int = Field(alias="RATE_LIMIT_MAX_PER_MINUTE", default=10, ge=1, le=100)
     session_ttl: int = Field(alias="SESSION_TTL_MINUTES", default=30, ge=1, le=1440)
 
-    model_config = SettingsConfigDict(extra="ignore")
 
-
-class ServerSettings(BaseSettings):
+class ServerSettings(_BaseConfig):
     host: str = Field(alias="SERVER_HOST", default="0.0.0.0")
     port: int = Field(alias="SERVER_PORT", default=7860, ge=1, le=65535)
-
-    model_config = SettingsConfigDict(extra="ignore")
 
 
 # ================================================================

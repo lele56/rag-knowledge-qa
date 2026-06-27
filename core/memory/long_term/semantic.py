@@ -1,4 +1,4 @@
-﻿# core/memory_system/semantic.py
+# core/memory/long_term/semantic.py
 """
 语义记忆 (Semantic Memory)。
 
@@ -248,13 +248,3 @@ def consolidate_semantic() -> int:
         "SET n.importance = n.importance * 0.9",
         {"now": now_ts},
     )
-    rows = _cypher(
-        "MATCH (n:Concept) WHERE n.importance < $threshold "
-        "WITH collect(n.name) AS names DETACH DELETE n "
-        "RETURN size(names) AS deleted",
-        {"threshold": cfg.FORGET_THRESHOLD},
-    )
-    deleted = int(rows[0].get("deleted", 0)) if rows else 0
-    if deleted:
-        logger.info(f"[memory] 语义记忆遗忘 {deleted} 个低重要性概念")
-    return deleted

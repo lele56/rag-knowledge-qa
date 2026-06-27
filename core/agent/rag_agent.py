@@ -1,4 +1,4 @@
-﻿# core/agent/rag_agent.py
+# core/agent/rag_agent.py
 """
 RAG ReAct Agent — 知识库问答专用 Agent
 
@@ -213,7 +213,8 @@ def get_chat_history_for_prompt(max_turns: int = 6) -> str:
             content = m.content if hasattr(m, 'content') else str(m)
             lines.append(f"{role}: {content[:300]}")
         return "\n".join(lines)
-    except Exception:
+    except Exception as e:
+        logger.debug(f"对话历史格式化失败: {e}")
         return "（暂无对话历史）"
 
 

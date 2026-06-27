@@ -1,4 +1,4 @@
-﻿# core/retrievers/factory.py
+# core/retrievers/factory.py
 from typing import Optional, Set
 from core.retrievers.base import get_base_retriever
 from core.retrievers.multi_query import get_multi_query_retriever

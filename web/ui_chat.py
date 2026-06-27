@@ -113,8 +113,8 @@ async def chat_respond(message, history):
                 history[-1]["content"] = full_response
                 try:
                     get_memory().save_context({"input": message}, {"answer": full_response})
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug(f"保存对话上下文失败: {e}")
                 yield "", history
                 return
 
@@ -149,5 +149,6 @@ def chat_undo(history):
 def refresh_history():
     try:
         return get_chat_history_as_text()
-    except Exception:
+    except Exception as e:
+        logger.debug(f"刷新对话历史失败: {e}")
         return "_暂无对话记录_"

@@ -1,4 +1,4 @@
-﻿# web/ui_handlers.py
+# web/ui_handlers.py
 """UI 事件处理 — 统一导出。
 
 拆分说明:

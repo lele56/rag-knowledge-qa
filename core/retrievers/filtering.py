@@ -1,4 +1,4 @@
-﻿# core/retrievers/filtering.py
+# core/retrievers/filtering.py
 """
 【检索过滤模块：将各种输入归一化，并构造 Qdrant Filter】
 
@@ -11,6 +11,7 @@
 from typing import Optional, Any, Tuple, Set, List
 from langchain_core.documents import Document
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue, MatchAny
+from utils.logger import logger
 
 
 # ============================================================
@@ -74,8 +75,8 @@ def build_qdrant_filter(source_filter) -> Optional[Filter]:
         from core.doc.doc_id_registry import get_doc_id_registry
         reg = get_doc_id_registry()
         doc_ids = reg.lookup_doc_ids(keywords)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"doc_id 查找失败: {e}")
 
     if not doc_ids:
         # 没有 doc_id匹配 → 退回 Python 侧兜底

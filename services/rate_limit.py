@@ -1,4 +1,4 @@
-﻿# services/rate_limit.py
+# services/rate_limit.py
 """速率限制 — 基于 Redis 的滑动窗口计数器。
 
 用法:

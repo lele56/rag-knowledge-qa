@@ -1,4 +1,4 @@
-﻿# services/session.py
+# services/session.py
 """会话状态持久化 — 基于 Redis 的会话状态存取。
 
 用法:
@@ -35,7 +35,8 @@ async def load_session_state(session_id: str) -> Optional[dict]:
     try:
         logger.debug(f"会话状态已恢复: {session_id}")
         return json.loads(val)
-    except Exception:
+    except Exception as e:
+        logger.debug(f"会话状态反序列化失败: {e}")
         return None
 
 

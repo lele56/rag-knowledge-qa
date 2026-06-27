@@ -1,4 +1,4 @@
-﻿# core/memory/__init__.py
+# core/memory/__init__.py
 """记忆模块 — 短期记忆 + 记忆管理器
 
 用法:

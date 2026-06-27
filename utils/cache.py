@@ -1,4 +1,4 @@
-﻿# utils/cache.py
+# utils/cache.py
 import asyncio
 import json
 import time

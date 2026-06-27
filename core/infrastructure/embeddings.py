@@ -1,4 +1,4 @@
-﻿# core/infrastructure/embeddings.py
+# core/infrastructure/embeddings.py
 """编码模型加载与 Embedding 缓存。
 
 提供:

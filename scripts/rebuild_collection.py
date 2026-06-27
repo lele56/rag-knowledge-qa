@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 重建 Qdrant 集合 —— 清空并重新导入所有论文文档
 
@@ -14,7 +14,8 @@ from pathlib import Path
 warnings.filterwarnings("ignore", message=".*FontBBox.*")
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 
-sys.path.append(str(Path(__file__).parent.parent))
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from config.settings import settings
 from utils.logger import logger
@@ -34,12 +35,11 @@ def clear_collection():
             logger.info(f"当前集合 {col_name} 共有 {count} 个点")
             client.delete_collection(col_name)
             logger.info(f"已删除集合 {col_name}")
-        except Exception:
-            logger.info(f"集合 {col_name} 不存在，跳过删除")
+        except Exception as e:
+            logger.info(f"集合 {col_name} 不存在或不可访问: {e}")
 
         # 触发 vector_store 重建，自动创建集合
-        from core.infrastructure.vector_store import _store as _store_global
-        import core.vector_store as vs
+        import core.infrastructure.vector_store as vs
         vs._store = None
         vs._payload_indexes_ensured = False
         store = get_vector_store()

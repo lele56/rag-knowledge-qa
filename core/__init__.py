@@ -1,4 +1,4 @@
-﻿# core/__init__.py
+# core/__init__.py
 """核心模块统一导出。
 
 基础设施:
@@ -20,7 +20,7 @@
     core.doc            — 文档加载、切块、ID 注册
     core.infrastructure — LLM/Embedding/重排序/向量存储/图谱存储
     core.memory         — 短期记忆 + 记忆管理器
-    core.memory_system  — 长期记忆系统（episodic + semantic + working）
+    core.memory.long_term  — 长期记忆系统（episodic + semantic + working）
     core.retrievers     — 检索器（base, hybrid, bm25, hyde, multi_query, factory）
     core.tools          — Agent 工具（rag_tools, pipeline, registry）
 """

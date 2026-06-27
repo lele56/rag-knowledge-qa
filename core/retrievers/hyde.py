@@ -1,4 +1,4 @@
-﻿# core/retrievers/hyde.py
+# core/retrievers/hyde.py
 from dataclasses import dataclass
 from typing import List, Any
 from langchain_core.retrievers import BaseRetriever
@@ -33,10 +33,10 @@ class HyDERetriever(BaseRetriever):
 
         try:
             super().__init__()
-        except Exception:
+        except TypeError:
             try:
                 super().__init__(callback_manager=None)
-            except Exception:
+            except TypeError:
                 pass
 
         self.__dict__[_STATE] = _HyDEState(

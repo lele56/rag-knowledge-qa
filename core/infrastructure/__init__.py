@@ -1,4 +1,4 @@
-﻿# core/infrastructure/__init__.py
+# core/infrastructure/__init__.py
 """基础设施模块 — LLM、Embedding、重排序、向量存储、图谱存储。
 
 用法:

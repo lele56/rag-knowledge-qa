@@ -1,4 +1,4 @@
-﻿# core/tools/registry.py
+# core/tools/registry.py
 """工具注册表 — 基于 LangChain BaseTool"""
 
 from typing import Optional, Dict, Any, List

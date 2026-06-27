@@ -72,9 +72,8 @@ python_functions = ["test_*"]
 asyncio_mode = "auto"
 addopts = "-v --tb=short --strict-markers --cov=core --cov=services --cov=chains --cov-report=term-missing"
 filterwarnings = [
-    "ignore:builtin type swigvarlink:DeprecationWarning",
-    "ignore:builtin type SwigPyPacked:DeprecationWarning",
-    "ignore:builtin type SwigPyObject:DeprecationWarning",
+    "ignore::DeprecationWarning:_bootstrap",
+    "ignore::FutureWarning:google.api_core",
 ]
 
 [tool.coverage.run]

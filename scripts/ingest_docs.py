@@ -6,7 +6,7 @@ from pathlib import Path
 warnings.filterwarnings("ignore", message=".*FontBBox.*")
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from services.document_service import get_document_service
 from utils.logger import logger
 

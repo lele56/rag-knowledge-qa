@@ -32,10 +32,10 @@ ckpt/
 .gradio/
 
 # 数据
-# 只保留示例测试文件，不保留评估结果和你的实际数据
+# 保留示例配置和当前测试集，不保留评估结果和实际数据
 data/*.json
 !data/*.example.json
-!data/test_question_example.json
+!data/test_question_ragas.json
 
 # 文档指南（仅在本地保留）
 docs/

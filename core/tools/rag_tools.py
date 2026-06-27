@@ -1,4 +1,4 @@
-﻿# core/tools/rag_tools.py
+# core/tools/rag_tools.py
 """RAG 专用工具 — 使用 LangChain @tool 装饰器自动生成 schema
 
 工具列表:
@@ -67,8 +67,8 @@ def rag_search(query: str, top_k: int = 8) -> str:
                     from chains.source_detection import resolve_source_filter
                     enriched = resolve_source_filter("__USE_FOCUS__", focus)
                     kwargs["source_filter"] = enriched or focus
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"focus 来源解析失败: {e}")
 
         docs = _retriever_fn(query, **kwargs)
         if not docs:
@@ -165,8 +165,7 @@ def memory_save(content: str) -> str:
         return "记忆系统未初始化"
 
     try:
-        if hasattr(_memory_manager, 'add_to_working'):
-            _memory_manager.add_to_working(content, "(系统保存)")
+        _memory_manager.remember(content, "(系统保存)", save_long=False)
         return f"已保存: {content[:100]}"
     except Exception as e:
         return f"保存失败: {e}"
