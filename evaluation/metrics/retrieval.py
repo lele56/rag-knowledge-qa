@@ -12,6 +12,7 @@ from typing import List, Optional, Any
 
 from .types import RetrievalResult
 from config.prompts import LLM_RELEVANCE_PROMPT
+from utils.logger import logger
 
 
 def _make_chunk_id(doc) -> str:

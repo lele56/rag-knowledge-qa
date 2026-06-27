@@ -12,6 +12,7 @@
 
 from typing import Optional, Callable
 from langchain_core.tools import tool
+from utils.logger import logger
 
 # 全局回调引用（由 Agent 在初始化时注入）
 _retriever_fn: Optional[Callable] = None

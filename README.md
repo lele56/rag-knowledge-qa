@@ -97,7 +97,7 @@ python scripts/ingest_docs.py
 ### 6. 启动
 
 ```bash
-python main.py
+python main.py          # 或 python web/gradio_app.py
 # 打开 http://localhost:7860
 ```
 
@@ -118,6 +118,9 @@ RETRIEVAL_STRATEGY=simple  # simple | multi_query | hyde
 ## 评估
 
 ```bash
+# 生成测试集（基于文档自动生成问答对）
+python scripts/_generate_testset.py --testset data/test_question_ragas.json
+
 # 检索评估
 python scripts/_eval_now.py --mode retrieval
 
@@ -127,8 +130,10 @@ python scripts/_eval_now.py --mode gen
 # 端到端评估
 python scripts/_eval_now.py --mode full
 
-# 指定策略 + 限制题目数
-python scripts/_eval_now.py --mode retrieval --strategy multi_query --limit 10
+# 指定策略 + 限制题目数 + 自定义路径
+python scripts/_eval_now.py --mode retrieval --strategy multi_query --limit 10 \
+    --testset data/test_question_ragas.json \
+    --output data/test_question_ragas_results.json
 ```
 
 示例输出（50 题，simple 策略）：
@@ -137,41 +142,45 @@ python scripts/_eval_now.py --mode retrieval --strategy multi_query --limit 10
 ======================================================================
   检索评估汇总
 ======================================================================
-  Recall@1:     88.00%
-  Recall@3:     96.00%
-  Recall@5:     96.00%
-  MRR:          0.9133
-  NDCG@5:       0.9201
-  Hit Rate:     96.00%
-  Avg Latency:  2563ms
-  P50/P95:      2167ms / 4492ms
+  Recall@1:     80.00%
+  Recall@3:     84.00%
+  Recall@5:     84.00%
+  Precision@5:  77.33%
+  MRR:          0.8167
+  NDCG@5:       0.8194
+  Hit Rate:     84.00%
+  Avg Latency:  9474ms
+  P50/P95:      6111ms / 42478ms
 ```
 
 ## 项目结构
 
 ```
 ├── chains/              # LangChain 链（GraphRAG、来源检测）
-├── config/              # 配置（pydantic-settings）
+├── config/              # 配置（pydantic-settings + 提示词模板）
 ├── core/                # 核心模块
-│   ├── agent/           # ReAct Agent
-│   ├── context/         # 上下文构建（GSSC 策略）
+│   ├── agent/           # ReAct Agent + 工具调用编排
+│   ├── context/         # 上下文构建（GSSC 策略：Compact/Full/EvidenceOnly/MultiDoc）
 │   ├── doc/             # 文档加载、切分、注册
 │   ├── infrastructure/  # LLM / Embedding / 重排序 / 向量存储 / 图谱存储
-│   ├── memory/          # 短期记忆 + 记忆管理器
-│   ├── memory_system/   # 长期记忆（episodic / semantic / working）
-│   ├── retrievers/      # 检索器（混合、BM25、HyDE、MultiQuery）+ 工厂
-│   └── tools/           # Agent 工具（文档聚焦、记忆召回等）
-├── data/                # 文档数据
-├── docker/              # Docker 编排（Qdrant + Neo4j + Redis）
-├── evaluation/          # 评估框架（检索 + 生成 + 性能）
-├── scripts/             # 脚本（导入文档、评估、重建索引）
+│   ├── memory/          # 短期记忆（滑动窗口）+ 长期记忆（情景/语义/工作）+ 记忆管理器
+│   │   └── long_term/   # 长期记忆子系统（episodic/semantic/working + 评分）
+│   ├── retrievers/      # 检索器（混合/BM25/增强/HyDE/MultiQuery/过滤）+ 工厂
+│   └── tools/           # Agent 工具（文档聚焦、记忆召回、保存）+ 注册器 + 管道
+├── data/                # 文档数据 + 测试集 + 评估结果
+├── docker-compose.yml   # Docker 编排（Qdrant + Neo4j + Redis）
+├── evaluation/          # 评估框架（检索 + 生成 + 性能 + RAGAS + 合成测试集）
+│   └── metrics/         # 指标计算（Recall/MRR/NDCG + Faithfulness/Relevance）
+├── scripts/             # 脚本（导入文档、评估、生成测试集、重建索引）
 ├── services/            # 业务服务层（QA / 文档 / 速率限制 / 会话）
-├── tests/               # 测试（单元 + 集成）
-├── utils/               # 工具（缓存、日志、Redis 客户端、设备检测）
-├── web/                 # Gradio Web UI（按 Tab 拆分）
+├── tests/               # 测试（单元 + 集成 + conftest fixtures）
+│   ├── unit/            # 单元测试（agent/retrievers/context/tools/cache）
+│   └── integration/     # 集成测试（QA pipeline）
+├── utils/               # 工具（缓存、日志、Redis 客户端、设备检测、Token 计数）
+├── web/                 # Gradio Web UI（聊天/上传/管理/事件处理）
 ├── .env.example         # 环境变量模板
 ├── Makefile             # 开发常用命令
-└── main.py              # 入口
+└── main.py              # 入口（→ web/gradio_app.py）
 ```
 
 ## 技术栈

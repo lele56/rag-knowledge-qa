@@ -93,6 +93,7 @@ def refresh_upload_status(records):
     except Exception as e:
         logger.debug(f"获取文档注册表失败: {e}")
         kb_files = set()
+    updated = []
     for r in records:
         name = r.get("name", "")
         if name in failed_files:
