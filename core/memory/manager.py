@@ -38,7 +38,10 @@ class MemoryManager:
             try:
                 from core.memory.long_term import get_memory_system
                 self._lts = get_memory_system()
-                logger.info("🧠 长期记忆系统已连接")
+                if self._lts.healthy:
+                    logger.info("🧠 长期记忆系统已连接 (episodic + semantic)")
+                else:
+                    logger.warning("🧠 长期记忆系统已连接，但部分后端不可用（仅工作记忆生效）")
             except Exception as e:
                 logger.warning(f"长期记忆系统不可用: {e}")
                 self._lts = False
