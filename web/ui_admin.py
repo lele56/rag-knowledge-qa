@@ -1,5 +1,14 @@
+# -*- coding: utf-8 -*-
 # web/ui_admin.py
-"""Tab 3 + Tab 4: 文档管理 + 系统状态/调试"""
+"""Tab 3 + Tab 4: 文档管理 + 系统状态/调试
+
+职责:
+  - 显示知识库统计信息（Qdrant 向量数、Neo4j 节点数）
+  - 列出所有已上传文档
+  - 清空对话记忆
+  - 刷新系统状态
+  - 调试检索功能
+"""
 
 from datetime import datetime
 
@@ -8,6 +17,13 @@ from core.infrastructure.vector_store import get_qdrant_status
 from core.infrastructure.graph_store import get_graph_status
 from core.memory import clear_memory, get_chat_history_as_text
 from utils.logger import logger
+
+
+# ============================================================
+# 常量
+# ============================================================
+
+MAX_DEBUG_KEYWORD_LENGTH = 200  # 调试关键词最大长度
 
 
 # ============================================================
@@ -79,11 +95,24 @@ def refresh_status():
 
 
 def debug_retrieve(keyword: str):
+    """调试检索功能。
+    
+    Args:
+        keyword: 检索关键词或问题
+        
+    Returns:
+        str: 格式化的检索结果或错误信息
+    """
     if not keyword or not keyword.strip():
         return "_请输入测试关键词_"
+    
+    keyword = keyword.strip()
+    if len(keyword) > MAX_DEBUG_KEYWORD_LENGTH:
+        return f"⚠️ 关键词过长（{len(keyword)} 字符），请限制在 {MAX_DEBUG_KEYWORD_LENGTH} 字符以内"
+    
     try:
         from core.retrievers.factory import get_retriever
-        docs = get_retriever().invoke(keyword.strip())
+        docs = get_retriever().invoke(keyword)
         if not docs:
             return "⚠️ **检索到 0 条** — 可能还没上传文档或 chunks 尚未入库"
         lines = [f"✅ **检索到 {len(docs)} 条** (关键词: `{keyword}`)\n"]

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # web/ui_handlers.py
 """UI 事件处理 — 统一导出。
 
@@ -5,12 +6,13 @@
     - web.ui_chat   — Tab 1: 智能问答 + CSS + 辅助函数
     - web.ui_upload — Tab 2: 文件上传
     - web.ui_admin  — Tab 3: 文档管理 + Tab 4: 系统状态/调试
+
+注意:
+    此文件仅作为统一导出入口，不包含具体实现逻辑。
 """
 
 from web.ui_chat import (
     CUSTOM_CSS,
-    qa,
-    doc_svc,
     _file_to_path,
     _render_uploaded_list,
     chat_respond,
@@ -32,8 +34,6 @@ from web.ui_admin import (
 
 __all__ = [
     "CUSTOM_CSS",
-    "qa",
-    "doc_svc",
     "_file_to_path",
     "_render_uploaded_list",
     "chat_respond",

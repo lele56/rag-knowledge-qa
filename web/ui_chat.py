@@ -1,5 +1,12 @@
+# -*- coding: utf-8 -*-
 # web/ui_chat.py
-"""Tab 1: 智能问答 — CSS 样式 + 聊天事件处理"""
+"""Tab 1: 智能问答 — CSS 样式 + 聊天事件处理
+
+职责:
+  - 定义自定义 CSS 样式
+  - 提供辅助函数（文件路径转换、上传记录渲染）
+  - 处理智能问答事件（流式响应、重试、撤销）
+"""
 
 import re
 from pathlib import Path
@@ -7,6 +14,7 @@ from typing import List, Union, Dict, Optional
 from datetime import datetime
 
 from services.qa_service import get_qa_service
+from services.document_service import get_document_service
 from core.memory import get_chat_history_as_text, clear_memory, get_memory
 from utils.logger import logger
 
@@ -45,13 +53,6 @@ CUSTOM_CSS = """
 """
 
 # ============================================================
-# 全局状态
-# ============================================================
-qa = None
-doc_svc = None
-
-
-# ============================================================
 # 辅助函数
 # ============================================================
 def _file_to_path(f: Union[str, dict, None]) -> Optional[Path]:
@@ -77,7 +78,15 @@ def _render_uploaded_list(records: List[Dict]) -> str:
 # Tab 1: 智能问答
 # ============================================================
 async def chat_respond(message, history):
-    global qa
+    """处理用户消息并流式返回 AI 响应。
+    
+    Args:
+        message: 用户输入的消息
+        history: 对话历史记录列表
+        
+    Yields:
+        tuple: (空字符串，更新后的历史记录)
+    """
     if not message or not message.strip():
         yield "", history
         return
@@ -122,14 +131,19 @@ async def chat_respond(message, history):
         yield "", history
     except Exception as e:
         logger.error(f"流式问答失败: {e}")
-        if qa is None:
-            qa = get_qa_service()
-        result = await qa.ask(message)
-        answer = result.get("answer", "系统错误，请重试。")
-        if result.get("sources"):
-            answer += "\n\n---\n📚 **来源参考**\n" + "\n".join(f"- {s}" for s in set(result["sources"]))
-        history[-1]["content"] = answer
-        yield "", history
+        # 降级到非流式问答
+        try:
+            qa_service = get_qa_service()
+            result = await qa_service.ask(message)
+            answer = result.get("answer", "系统错误，请重试。")
+            if result.get("sources"):
+                answer += "\n\n---\n📚 **来源参考**\n" + "\n".join(f"- {s}" for s in set(result["sources"]))
+            history[-1]["content"] = answer
+            yield "", history
+        except Exception as fallback_err:
+            logger.error(f"降级问答也失败: {fallback_err}")
+            history[-1]["content"] = "❌ 系统错误，请稍后重试。"
+            yield "", history
 
 
 def chat_retry(message, history):

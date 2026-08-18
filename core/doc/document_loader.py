@@ -1,7 +1,17 @@
 # core/doc/document_loader.py
+"""文档加载与分块：PDF 解析 → 分块 → 质量过滤 → 元数据注入
+
+职责:
+  - 多格式文档加载（PDF/MD/TXT）
+  - 四级回退解析（Unstructured → PDFPlumber → markitdown → PyPDFLoader）
+  - 分块与质量过滤
+  - 元数据注入（溯源信息）
+"""
+
 import hashlib
 import logging
 import warnings
+from datetime import datetime
 from pathlib import Path
 from typing import List, Set, Optional
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredMarkdownLoader, PDFPlumberLoader, UnstructuredPDFLoader
@@ -100,10 +110,13 @@ def load_and_split_documents(file_paths: List[Path]) -> List[Document]:
             dt_md = _t.time() - t0
 
             doc_id = make_doc_id(path)
+            file_size_kb = path.stat().st_size / 1024 if path.exists() else 0
             for s in sections:
                 s.metadata["source"] = str(path.name)
                 s.metadata["doc_id"] = doc_id
                 s.metadata["file_type"] = ext
+                s.metadata["parse_method"] = source_type  # 新增：解析方式
+                s.metadata["file_size_kb"] = round(file_size_kb, 1)  # 新增：文件大小
 
             logger.info(
                 f"  → 文本提取: {dt_md:.1f}s, {len(sections)} 段落 "
@@ -136,9 +149,12 @@ def load_and_split_documents(file_paths: List[Path]) -> List[Document]:
 
     all_chunks = filter_low_quality_chunks(all_chunks)
 
+    # 注入全局 chunk 索引和处理时间
+    processed_at = datetime.now().isoformat()
     for i, c in enumerate(all_chunks):
         c.metadata["chunk_index"] = i
         c.metadata["chunk_total"] = len(all_chunks)
+        c.metadata["processed_at"] = processed_at
 
     total_tokens = sum(c.metadata.get("chunk_tokens", 0) for c in all_chunks)
     low_q = sum(1 for c in all_chunks if c.metadata.get("quality_score", 1) < 0.4)

@@ -102,10 +102,10 @@ class ChunkingSettings(_BaseConfig):
     token_max: int = Field(alias="CHUNK_TOKEN_MAX", default=800, ge=50, le=4000)
     overlap_token: int = Field(alias="CHUNK_OVERLAP_TOKEN", default=80, ge=0, le=500)
     strategy: str = Field(alias="CHUNK_STRATEGY", default="recursive")
-    quality_min_score: float = Field(default=0.2, ge=0.0, le=1.0)
-    quality_min_tokens: int = Field(default=50, ge=0, le=500)
+    quality_min_score: float = Field(default=0.15, ge=0.0, le=1.0)
+    quality_min_tokens: int = Field(default=30, ge=0, le=500)
     quality_min_heading_tokens: int = Field(default=30, ge=0, le=200)
-    quality_min_body_len: int = Field(default=15, ge=0, le=200)
+    quality_min_body_len: int = Field(default=50, ge=0, le=200)
 
     @field_validator("strategy")
     @classmethod

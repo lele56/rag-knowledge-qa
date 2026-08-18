@@ -1,16 +1,31 @@
+# -*- coding: utf-8 -*-
 # web/ui_upload.py
-"""Tab 2: 上传文件 — 文档上传 + 状态刷新"""
+"""Tab 2: 上传文件 — 文档上传 + 状态刷新
+
+职责:
+  - 处理文件上传事件
+  - 刷新上传状态（写入中/已入库/失败）
+  - 管理上传记录
+"""
 
 from typing import List, Dict
 from datetime import datetime
 
 from services.document_service import get_document_service
 from utils.logger import logger
-from web.ui_chat import _file_to_path, _render_uploaded_list, doc_svc
+from web.ui_chat import _file_to_path, _render_uploaded_list
 
 
 async def upload_files(files, records):
-    global doc_svc
+    """处理文件上传事件。
+    
+    Args:
+        files: Gradio File 组件返回的文件列表
+        records: 已有的上传记录列表
+        
+    Returns:
+        tuple: (状态消息，更新后的记录列表，清空文件输入，新记录列表)
+    """
     if records is None:
         records = []
     if not files:
@@ -27,8 +42,7 @@ async def upload_files(files, records):
         return "❌ 没有可处理的文件", _render_uploaded_list(records), None, records
 
     try:
-        if doc_svc is None:
-            doc_svc = get_document_service()
+        doc_svc = get_document_service()
         time_str = datetime.now().strftime("%H:%M:%S")
 
         result = await doc_svc.add_documents_async(paths)
@@ -70,12 +84,18 @@ async def upload_files(files, records):
 
 
 def refresh_upload_status(records):
-    global doc_svc
+    """刷新上传状态显示。
+    
+    Args:
+        records: 上传记录列表
+        
+    Returns:
+        tuple: (状态消息，更新后的记录列表)
+    """
     if not records:
         return "*暂无上传记录*", records
 
-    if doc_svc is None:
-        doc_svc = get_document_service()
+    doc_svc = get_document_service()
 
     bg_errors = doc_svc.get_bg_errors()
     failed_files = set()
