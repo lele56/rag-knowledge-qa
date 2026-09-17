@@ -10,10 +10,13 @@
 
 import hashlib
 import logging
+import os
+import sys
 import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import List, Set, Optional
+from contextlib import contextmanager
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredMarkdownLoader, PDFPlumberLoader, UnstructuredPDFLoader
 from langchain_core.documents import Document
 from utils.logger import logger
@@ -22,6 +25,19 @@ from config.settings import settings
 
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 warnings.filterwarnings("ignore", message=".*FontBBox.*")
+
+
+@contextmanager
+def _suppress_stderr():
+    null_fd = os.open(os.devnull, os.O_WRONLY)
+    old_fd = os.dup(2)
+    os.dup2(null_fd, 2)
+    os.close(null_fd)
+    try:
+        yield
+    finally:
+        os.dup2(old_fd, 2)
+        os.close(old_fd)
 
 # ---------- doc_id ----------
 
@@ -92,21 +108,22 @@ def load_and_split_documents(file_paths: List[Path]) -> List[Document]:
 
             # PDF 四级回退：Unstructured → PDFPlumber → markitdown → PyPDFLoader
             t0 = _t.time()
-            if ext == ".pdf":
-                sections = _try_unstructured_pdf(path)
-                source_type = "unstructured"
-                if sections is None:
-                    sections = _try_pdfplumber(path)
-                    source_type = "pdfplumber"
-                if sections is None:
+            with _suppress_stderr():
+                if ext == ".pdf":
+                    sections = _try_unstructured_pdf(path)
+                    source_type = "unstructured"
+                    if sections is None:
+                        sections = _try_pdfplumber(path)
+                        source_type = "pdfplumber"
+                    if sections is None:
+                        sections = try_markitdown(path)
+                        source_type = "markitdown"
+                else:
                     sections = try_markitdown(path)
                     source_type = "markitdown"
-            else:
-                sections = try_markitdown(path)
-                source_type = "markitdown"
-            if sections is None:
-                sections = _fallback_load(path)
-                source_type = "fallback"
+                if sections is None:
+                    sections = _fallback_load(path)
+                    source_type = "fallback"
             dt_md = _t.time() - t0
 
             doc_id = make_doc_id(path)

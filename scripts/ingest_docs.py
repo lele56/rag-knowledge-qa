@@ -8,12 +8,7 @@
 """
 
 import sys
-import logging
-import warnings
 from pathlib import Path
-
-warnings.filterwarnings("ignore", message=".*FontBBox.*")
-logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config.settings import settings
