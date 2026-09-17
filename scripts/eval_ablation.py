@@ -277,6 +277,9 @@ def main():
     parser.add_argument("--output", type=Path, default=None, help="结果 JSON 路径")
     args = parser.parse_args()
 
+    if args.output is None:
+        args.output = Path("results") / f"ablation_{args.mode}.json"
+
     testset = TestSet.from_json(args.testset)
     if args.limit > 0:
         testset.cases = testset.cases[:args.limit]

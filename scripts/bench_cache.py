@@ -13,6 +13,7 @@
 import sys
 import asyncio
 import argparse
+import json
 import random
 import time
 from pathlib import Path
@@ -140,7 +141,13 @@ def main():
     queries = generate_queries(args.queries, args.dup_ratio)
     print(f"生成 {len(queries)} 个模拟提问 (重复比例 ≈{args.dup_ratio:.0%})\n")
 
-    asyncio.run(run_benchmark(queries))
+    result = asyncio.run(run_benchmark(queries))
+
+    out_path = Path("results") / "cache_bench.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+    print(f"结果已保存: {out_path}")
 
 
 if __name__ == "__main__":
