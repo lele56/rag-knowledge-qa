@@ -4,6 +4,7 @@
 from .base import DirectQdrantRetriever
 from .filtering import normalize_filter, build_qdrant_filter, split_doc_ids_and_keywords
 from .hybrid import HybridRetriever
+from .strategies import EnhancedRetriever, get_enhanced_retriever
 from .bm25 import BM25Retriever
 from .hyde import HyDERetriever
 from .multi_query import get_multi_query_retriever
@@ -15,6 +16,8 @@ __all__ = [
     "build_qdrant_filter",
     "split_doc_ids_and_keywords",
     "HybridRetriever",
+    "EnhancedRetriever",
+    "get_enhanced_retriever",
     "BM25Retriever",
     "HyDERetriever",
     "get_multi_query_retriever",

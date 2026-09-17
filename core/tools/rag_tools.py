@@ -2,12 +2,13 @@
 """RAG 专用工具 — 使用 LangChain @tool 装饰器自动生成 schema
 
 工具列表:
-- rag_search:    知识库检索
-- doc_focus:     聚焦/切换文档
-- list_docs:     列出已上传文档
-- memory_recall: 回忆长期记忆
-- memory_save:   保存到长期记忆
-- graph_query:   知识图谱查询
+- rag_search:      知识库检索
+- enhanced_search: 增强检索（拆解 + 并行多轮）
+- doc_focus:       聚焦/切换文档
+- list_docs:       列出已上传文档
+- memory_recall:   回忆长期记忆
+- memory_save:     保存到长期记忆
+- graph_query:     知识图谱查询
 """
 
 from typing import Optional, Callable
@@ -21,6 +22,7 @@ _focus_callback: Optional[Callable] = None
 _list_callback: Optional[Callable] = None
 _memory_manager = None
 _graph_chain = None
+_enhanced_retriever = None  # 增强检索器
 _SENTINEL = object()
 
 
@@ -31,9 +33,10 @@ def set_tool_deps(
     list_callback=_SENTINEL,
     memory_manager=_SENTINEL,
     graph_chain=_SENTINEL,
+    enhanced_retriever=_SENTINEL,
 ):
     """注入工具依赖（由 Agent 初始化时调用，传 None 可清除对应依赖）"""
-    global _retriever_fn, _source_filter, _focus_callback, _list_callback, _memory_manager, _graph_chain
+    global _retriever_fn, _source_filter, _focus_callback, _list_callback, _memory_manager, _graph_chain, _enhanced_retriever
     if retriever_fn is not _SENTINEL:
         _retriever_fn = retriever_fn
     if source_filter is not _SENTINEL:
@@ -46,6 +49,8 @@ def set_tool_deps(
         _memory_manager = memory_manager
     if graph_chain is not _SENTINEL:
         _graph_chain = graph_chain
+    if enhanced_retriever is not _SENTINEL:
+        _enhanced_retriever = enhanced_retriever
 
 
 @tool
@@ -89,6 +94,57 @@ def rag_search(query: str, top_k: int = 8) -> str:
         return "\n\n".join(parts)
     except Exception as e:
         return f"检索失败: {e}"
+
+
+@tool
+def enhanced_search(query: str, top_k: int = 4) -> str:
+    """增强检索：将复杂问题拆解为多个定向子查询，并行检索后合并。
+
+    适用场景:
+      - 跨文档对比: "GA-LightGBM 和 GA-VMD-TCN 的优化方法有什么区别？"
+      - 多维度查询: "Transformer 的自注意力瓶颈是什么？有哪些解决方案？"
+      - 简单事实查询请用 rag_search
+
+    这个工具会自动判断问题是否需要拆解，简单问题回退为单次检索。
+
+    Args:
+        query: 原始用户问题
+        top_k: 每个子查询的返回结果数，默认4
+    """
+    if _enhanced_retriever is None:
+        return rag_search(query, top_k=top_k)
+
+    try:
+        result = _enhanced_retriever.search(query, top_k=top_k)
+
+        if not result.is_multi:
+            # 单次检索，格式同 rag_search
+            parts = []
+            for i, doc in enumerate(result.docs[:top_k], 1):
+                content = doc.page_content if hasattr(doc, "page_content") else str(doc)
+                meta = doc.metadata if hasattr(doc, "metadata") else {}
+                src = meta.get("source", "未知")
+                parts.append(f"[{i}] 来源: {src}\n{content[:500]}")
+            return "\n\n".join(parts) if parts else "未找到相关文档"
+
+        # 增强检索结果
+        lines = [f"增强检索完成（拆解为 {len(result.sub_queries)} 个子查询，合并后 {result.total_docs} 个结果）\n"]
+        lines.append("子查询:")
+        for i, sq in enumerate(result.sub_queries, 1):
+            lines.append(f"  {i}. {sq}")
+        lines.append("")
+
+        for i, doc in enumerate(result.docs[:top_k * 2], 1):
+            content = doc.page_content if hasattr(doc, "page_content") else str(doc)
+            meta = doc.metadata if hasattr(doc, "metadata") else {}
+            src = meta.get("source", "未知")
+            lines.append(f"[{i}] 来源: {src}\n{content[:500]}\n")
+
+        return "\n".join(lines)
+
+    except Exception as e:
+        logger.warning(f"增强检索失败: {e}，回退单次检索")
+        return rag_search(query, top_k=top_k)
 
 
 @tool

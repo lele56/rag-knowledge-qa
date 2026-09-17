@@ -1,13 +1,18 @@
-﻿# services/qa_service.py
-"""QA 服务 — 使用 RAGAgent 的 ReAct 模式问答"""
+# services/qa_service.py
+"""
+QA 服务 — 使用 RAGAgent 的 ReAct 模式问答
+"""
 
 import asyncio
-from typing import Dict, Any
+import time
+from collections import defaultdict
+from typing import Dict, Any, Optional
 from config.settings import settings
 from config.prompts import GRAPH_INTENT_PROMPT
 from utils.cache import AsyncTTLCache, AsyncRedisCache
 from utils.logger import logger
 from core.agent.rag_agent import get_rag_agent, RAGAgent
+from core.agent.intent import pre_classify, Intent
 from core.infrastructure.llm import get_llm
 from chains.graph_chain import get_graph_chain
 from services.rate_limit import check_rate_limit
@@ -35,6 +40,78 @@ def _should_auto_store_semantic(question: str, answer: str) -> bool:
     return len(concepts) >= 2
 
 
+# ================================================================
+# 成本追踪器（按调用次数，不依赖价格）
+# ================================================================
+
+class QACostTracker:
+    """QA 调用追踪器（单例）。
+
+    只追踪调用次数，不涉及价格——模型价格变动频繁，用次数最稳。
+
+    指标：
+      - 缓存命中率 = 命中 / 总请求
+      - 成本降低率 ≈ 命中率（每次命中跳过 1 次 LLM 调用）
+
+    Usage:
+        tracker = get_cost_tracker()
+        tracker.on_request()
+        tracker.on_cache_hit()
+        tracker.on_llm_call()
+        print(tracker.summary())
+    """
+
+    def __init__(self):
+        self.total_requests = 0
+        self.cache_hits = 0
+        self.llm_calls = 0
+
+    def on_request(self):
+        self.total_requests += 1
+
+    def on_cache_hit(self):
+        self.cache_hits += 1
+
+    def on_llm_call(self):
+        self.llm_calls += 1
+
+    # ---- 统计指标 ----
+
+    @property
+    def hit_rate(self) -> float:
+        if self.total_requests == 0:
+            return 0.0
+        return self.cache_hits / self.total_requests * 100
+
+    @property
+    def cost_saved_ratio(self) -> float:
+        """成本降低率 ≈ 缓存命中率（跳过 LLM 调用的比例）。"""
+        return self.hit_rate
+
+    def summary(self) -> dict:
+        return {
+            "总请求": self.total_requests,
+            "缓存命中": self.cache_hits,
+            "LLM实际调用": self.llm_calls,
+            "缓存命中率": f"{self.hit_rate:.1f}%",
+            "成本降低率": f"{self.cost_saved_ratio:.1f}%",
+        }
+
+
+_tracker: Optional[QACostTracker] = None
+
+
+def get_cost_tracker() -> QACostTracker:
+    global _tracker
+    if _tracker is None:
+        _tracker = QACostTracker()
+    return _tracker
+
+
+# ================================================================
+# QA 服务
+# ================================================================
+
 class QAService:
     def __init__(self):
         self.agent: RAGAgent = get_rag_agent()
@@ -50,10 +127,14 @@ class QAService:
             self.cache = None
 
     async def ask(self, question: str, session_id: str = "default") -> Dict[str, Any]:
+        tracker = get_cost_tracker()
+        tracker.on_request()
+
         if self.cache:
             cached = await self.cache.get(question)
             if cached:
-                logger.info(f"Cache hit: {question[:50]}")
+                tracker.on_cache_hit()
+                logger.info(f"Cache hit ({tracker.hit_rate:.0f}%): {question[:50]}")
                 return cached
 
         if not await check_rate_limit(session_id):
@@ -66,7 +147,11 @@ class QAService:
             }
 
         try:
+            intent = pre_classify(question)
+            logger.info(f"意图: {intent or '未识别'} | {question[:50]}")
+
             result = await self.agent.aask(question)
+            tracker.on_llm_call()
             answer = result.answer
             sources = result.sources or []
 
@@ -92,6 +177,7 @@ class QAService:
                 "sources": sources,
                 "agent_steps": len(result.steps),
                 "agent_state": result.state.value,
+                "intent": str(intent) if intent else "unknown",
             }
 
             if self.cache:

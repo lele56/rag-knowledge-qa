@@ -27,6 +27,7 @@ from core.agent.types import AgentResult
 from core.tools import ToolRegistry
 from core.tools.rag_tools import (
     rag_search,
+    enhanced_search,
     list_docs,
     memory_recall,
     memory_save,
@@ -61,6 +62,7 @@ class RAGAgent(ReActAgent):
     ):
         tool_registry = ToolRegistry()
         tool_registry.register(rag_search)
+        tool_registry.register(enhanced_search)
         tool_registry.register(list_docs)
         tool_registry.register(memory_recall)
         tool_registry.register(memory_save)
@@ -132,6 +134,18 @@ class RAGAgent(ReActAgent):
     def attach_graph(self, graph_chain) -> "RAGAgent":
         """注入知识图谱链（供 Agent 的 graph_query 工具调用）"""
         set_tool_deps(graph_chain=graph_chain)
+        return self
+
+    def attach_enhanced(self, enhanced_retriever) -> "RAGAgent":
+        """注入增强检索器（供 Agent 的 enhanced_search 工具调用）
+
+        Usage:
+            from core.retrievers.strategies import get_enhanced_retriever
+            er = get_enhanced_retriever(llm=llm)
+            er.set_enabled(True)  # 消融实验: 开启/关闭
+            agent.attach_enhanced(er)
+        """
+        set_tool_deps(enhanced_retriever=enhanced_retriever)
         return self
 
     def attach_focus(self, focus_callback: Callable[[str], str]) -> "RAGAgent":
@@ -319,6 +333,15 @@ def create_rag_agent(
         logger.info("RAGAgent: 已注入检索器")
     except Exception as e:
         logger.warning(f"RAGAgent: 注入检索器失败: {e}")
+
+    # 自动注入增强检索器
+    try:
+        from core.retrievers.strategies import get_enhanced_retriever
+        er = get_enhanced_retriever(retriever_fn=_retrieve, llm=llm)
+        agent.attach_enhanced(er)
+        logger.info(f"RAGAgent: 已注入增强检索 (enabled={er.is_enabled})")
+    except Exception as e:
+        logger.warning(f"RAGAgent: 注入增强检索失败: {e}")
 
     # 自动注入记忆管理器
     try:

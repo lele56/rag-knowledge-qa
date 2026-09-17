@@ -59,7 +59,7 @@ class EmbeddingSettings(_BaseConfig):
 
 
 class RerankerSettings(_BaseConfig):
-    model_path: str = Field(alias="RERANKER_MODEL_PATH", default="BAAI/bge-reranker-v2-m3")
+    model_path: str = Field(alias="RERANKER_MODEL_PATH", default="BAAI/bge-reranker-base")
 
 
 class RetrievalSettings(_BaseConfig):
@@ -75,6 +75,18 @@ class RetrievalSettings(_BaseConfig):
         if v not in allowed:
             raise ValueError(f"strategy 必须是 {allowed} 之一，当前: {v}")
         return v
+
+
+class MultiHopSettings(_BaseConfig):
+    """多跳推理配置 — 可插拔的链式推理增强
+
+    消融实验:
+      关闭 enabled → baseline（单次检索）
+      开启 enabled → 多跳推理（链式子查询）
+    """
+    enabled: bool = Field(alias="MULTI_HOP_ENABLED", default=False)
+    max_hops: int = Field(alias="MULTI_HOP_MAX_HOPS", default=3, ge=1, le=5)
+    hops_top_k: int = Field(alias="MULTI_HOP_TOP_K", default=4, ge=1, le=20)
 
 
 class MemorySettings(_BaseConfig):
@@ -198,6 +210,7 @@ class Settings(BaseSettings):
     embedding: EmbeddingSettings = EmbeddingSettings()
     reranker: RerankerSettings = RerankerSettings()
     retrieval: RetrievalSettings = RetrievalSettings()
+    multi_hop: MultiHopSettings = MultiHopSettings()
     memory: MemorySettings = MemorySettings()
     long_term_memory: LongTermMemorySettings = LongTermMemorySettings()
     chunking: ChunkingSettings = ChunkingSettings()
@@ -235,6 +248,7 @@ class Settings(BaseSettings):
             "MEMORY_": "memory",
             "LS_": "long_term_memory",
             "CHUNK_": "chunking",
+            "MULTI_HOP_": "multi_hop",
             "CACHE_": "cache",
             "REDIS_": "redis",
             "RATE_LIMIT_": "rate_limit",

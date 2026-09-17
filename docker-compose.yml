@@ -4,6 +4,10 @@
 # 启动所有依赖服务:
 #   docker-compose up -d
 #
+# 低内存部署（只启动必要服务）:
+#   docker-compose up -d neo4j
+#   docker-compose up -d qdrant    # 如果用本地 Qdrant
+#
 # 单独启动某个服务:
 #   docker-compose up -d redis
 #   docker-compose up -d qdrant

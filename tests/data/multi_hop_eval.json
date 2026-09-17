@@ -1,0 +1,82 @@
+[
+  {
+    "question": "Linformer 和 LLM 综述都讨论 Transformer 的自注意力瓶颈。若把 Linformer 的低秩线性自注意力用于长上下文 LLM，其理论依据是什么？效率从什么复杂度降到什么复杂度？",
+    "expected_answer": "理论依据是自注意力形成的上下文映射矩阵可以被低秩矩阵近似；Linformer 通过线性投影将 K、V 投影到 k 维，计算 n×k 的上下文，使时间与空间复杂度从 O(n^2) 降为 O(n)。LLM 综述也指出 full attention 的二次复杂度在长序列上会成为负担。",
+    "expected_keywords": ["low-rank", "self-attention", "O(n^2)", "O(n)", "long context"],
+    "gold_docs": ["linformer2006.04768v3.pdf", "A Survey of Large Language Models.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "MoR 与 LLM 综述中的参数高效、自适应计算有何关系？MoR 如何同时减少参数、FLOPs 和 KV 内存？",
+    "expected_answer": "MoR 属于递归 Transformer：共享一组层参数以减少参数量；轻量路由器为每个 token 动态分配递归深度，实现 token 级自适应计算；只在当前递归深度仍活跃的 token 间做注意力，并采用递归式 KV 缓存，从而减少 FLOPs 和 KV 内存。这与 LLM 综述中参数高效微调、训练/推理优化等效率方向一致。",
+    "expected_keywords": ["Mixture-of-Recursions", "recursive transformer", "parameter sharing", "adaptive computation", "KV caching"],
+    "gold_docs": ["MOR2507.10524v1.pdf", "A Survey of Large Language Models.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Happy-LLM 描述的 RLHF-PPO 需要四个模型，分别是什么？为什么需要参考模型和奖励模型？",
+    "expected_answer": "四个模型是 Actor、Critic、Ref、Reward。Ref 模型用于计算 KL 散度约束，防止 Actor 过度偏离 SFT 或原模型；Reward 模型提供反映人类偏好的标量奖励；Critic 估计价值；Actor 更新策略。LLM 综述也把 RLHF 概括为监督微调、奖励模型训练和 RL 微调三阶段。",
+    "expected_keywords": ["RLHF", "PPO", "Actor", "Critic", "Reference", "Reward", "KL"],
+    "gold_docs": ["Happy-LLM-0727.pdf", "A Survey of Large Language Models.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Docker 镜像分层、容器可写层与 Git 快照、提交对象在版本化数据上有何异同？",
+    "expected_answer": "相同点：二者都体现增量或快照思想，并通过内容标识实现复用；Git 提交是项目快照，未变文件可链接前次提交，提交由 SHA-1 标识；Docker 镜像由只读层叠加，层可共享。不同点：Docker 运行时在镜像上增加容器可写层，采用 Copy-on-Write，容器删除后可写层数据默认丢失；Git 提交历史持久保存在仓库中，分支只是指向提交的可变指针，已提交数据通常可恢复。",
+    "expected_keywords": ["UnionFS", "Copy-on-Write", "snapshot", "commit object", "layer", "SHA-1"],
+    "gold_docs": ["docker_practice-v1.10.0.pdf", "progit.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "两篇金融预测论文都使用遗传算法，但 GA 的作用分别是什么？它们如何与 LightGBM、VMD、TCN 结合？",
+    "expected_answer": "GA-LightGBM 论文中，GA 用于构建 GA-LightGBM 特征选择器，以 LightGBM 的 AUC 等作为适应度，从扩展特征集中筛选最优特征子集，再用贝叶斯优化 LightGBM 超参数。GA-VMD-TCN 论文中，GA 用于优化 VMD 的参数 alpha 和 K，以样本熵为适应度，然后用 TCN 对分解出的 IMF 做多步预测并重构。",
+    "expected_keywords": ["遗传算法", "特征选择", "VMD", "alpha", "K", "TCN", "贝叶斯优化"],
+    "gold_docs": ["基于贝叶斯优化的GA-LightGBM模型股指期货量化策略研究_涂章敏.pdf", "GA-VMD-TCN.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "4D LangSplat 为什么不用 CLIP 视觉特征，而用 MLLM 生成对象级视频字幕？这与 LLM 综述中的 MLLM 能力有何联系？",
+    "expected_answer": "CLIP 面向静态图像文本匹配，难以捕捉视频中的时序动态、状态变化和动作。4D LangSplat 使用 MLLM 结合视觉与文本提示，为每个对象生成时序一致、对象级的高质量字幕，再用 LLM 编码为句子嵌入，作为像素对齐的对象级监督，从而支持时间敏感和时间无关的开放词汇查询。LLM 综述指出 MLLM 通过视觉编码器、连接器和 LLM 结合，并经过视觉指令微调，可处理多模态输入与生成。",
+    "expected_keywords": ["MLLM", "object-wise caption", "CLIP", "temporal dynamics", "open-vocabulary"],
+    "gold_docs": ["多模态2503.10437v2.pdf", "A Survey of Large Language Models.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Happy-LLM 中多头自注意力 QK^T 的复杂度是多少？Linformer 如何把该操作变成线性复杂度？",
+    "expected_answer": "在 Happy-LLM 的多头自注意力中，Q 与 K 相乘得到 n×n 注意力分数，时间和空间复杂度为 O(n^2)。Linformer 对 K、V 引入线性投影 E、F，将其投影到 k 维，计算 n×k 的上下文映射，即 softmax(Q E (K)^T) F V，复杂度为 O(nk)；当 k 远小于 n 时即为 O(n)。",
+    "expected_keywords": ["multi-head attention", "QK^T", "O(n^2)", "low-rank", "E/F projection", "O(n)"],
+    "gold_docs": ["linformer2006.04768v3.pdf", "Happy-LLM-0727.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Git 的分支、标签与 Docker 的标签、摘要如何类比？生产环境为什么推荐使用镜像摘要？",
+    "expected_answer": "Git 分支是指向提交的可变指针，标签是提交的引用；Git 提交可由 SHA-1 内容哈希标识。Docker 标签类似可变版本标识，可被覆盖；镜像摘要 digest 是基于内容的 SHA256，不可变。生产环境推荐使用 digest 而非 tag，因为 tag 可能被重新指向，digest 能保证镜像内容完全一致、可重现和可追溯。",
+    "expected_keywords": ["分支指针", "tag", "digest", "immutable", "SHA-1", "可重现"],
+    "gold_docs": ["progit.pdf", "docker_practice-v1.10.0.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "MoR 和 Linformer 分别从什么维度优化 Transformer 效率？它们能否互补？",
+    "expected_answer": "Linformer 从序列注意力维度优化：利用自注意力低秩性，将 O(n^2) 自注意力降为 O(n)。MoR 从参数和深度维度优化：递归共享层参数，路由器为每个 token 分配不同递归深度，并递归式缓存 KV，减少参数、FLOPs 和 KV 内存。二者可互补：在 MoR 的递归块内部采用 Linformer 式线性注意力，可同时降低深度/参数成本和序列注意力成本。",
+    "expected_keywords": ["low-rank", "recursion", "adaptive depth", "KV cache", "linear complexity"],
+    "gold_docs": ["MOR2507.10524v1.pdf", "linformer2006.04768v3.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Happy-LLM 的三阶段训练 Pretrain、SFT、RLHF 与 LLM 综述中的预训练、适配、利用、评估如何对应？",
+    "expected_answer": "Pretrain 对应 LLM 综述中的预训练；SFT 对应适配中的指令微调或有监督微调；RLHF 对应适配与对齐中的 RLHF 或人类偏好对齐。LLM 综述还包含利用与评估，而 Happy-LLM 第 7 章的应用与评测、RAG、Agent 等内容可对应利用和评估部分。",
+    "expected_keywords": ["Pretrain", "SFT", "RLHF", "instruction tuning", "alignment", "evaluation"],
+    "gold_docs": ["Happy-LLM-0727.pdf", "A Survey of Large Language Models.pdf"],
+    "category": "multi_hop",
+    "difficulty": "hard"
+  }
+]
