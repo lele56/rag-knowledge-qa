@@ -3,7 +3,6 @@
 
 from .base import Tool, ToolParameter
 from .registry import ToolRegistry, get_tool_registry
-from .pipeline import ToolPipeline, ConditionalPipeline, ParallelPipeline
 from .rag_tools import (
     rag_search,
     doc_focus,
@@ -19,9 +18,6 @@ __all__ = [
     "ToolParameter",
     "ToolRegistry",
     "get_tool_registry",
-    "ToolPipeline",
-    "ConditionalPipeline",
-    "ParallelPipeline",
     "rag_search",
     "doc_focus",
     "list_docs",

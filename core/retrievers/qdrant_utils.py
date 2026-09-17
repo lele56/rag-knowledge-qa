@@ -1,5 +1,5 @@
-# core/retrievers/enhanced.py
-"""检索增强：Qdrant 格式转换 + 相似度降噪 + 上下文标记"""
+# core/retrievers/qdrant_utils.py
+"""Qdrant 工具：ScoredPoint 格式转换 + 相似度降噪 + 上下文标记"""
 import re
 from typing import Optional, Any, List
 import numpy as np
@@ -41,17 +41,14 @@ def _embedding_similarity_filter(
     threshold: float = 0.3,
     k: int = 100,
 ) -> List[Document]:
-    """用 embedding 余弦相似度过滤文档，替代已废弃的 langchain_classic EmbeddingsFilter。"""
     if not docs:
         return []
     embeddings = get_embeddings()
     query_vec = np.array(embeddings.embed_query(query))
     doc_vecs = np.array(embeddings.embed_documents([d.page_content for d in docs]))
-    # 余弦相似度
     query_norm = query_vec / (np.linalg.norm(query_vec) + 1e-8)
     doc_norms = doc_vecs / (np.linalg.norm(doc_vecs, axis=1, keepdims=True) + 1e-8)
     scores = np.dot(doc_norms, query_norm)
-    # 筛选 + 排序
     indices = np.argsort(scores)[::-1]
     result = []
     for i in indices:
@@ -68,7 +65,6 @@ def denoise_docs(
     min_score: float = 0.3,
     focused_mode: bool = False,
 ) -> List[Document]:
-    """向量相似度过滤 + 指纹去重。"""
     if not docs:
         return docs
     before = len(docs)

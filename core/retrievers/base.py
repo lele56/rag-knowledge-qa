@@ -34,7 +34,7 @@ from core.retrievers.filtering import (
     build_qdrant_filter,
     doc_matches_source_filter,
 )
-from core.retrievers.enhanced import (
+from core.retrievers.qdrant_utils import (
     scored_point_to_doc,
     denoise_docs,
     enrich_with_context,

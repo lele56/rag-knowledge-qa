@@ -8,7 +8,7 @@ from .strategies import EnhancedRetriever, get_enhanced_retriever
 from .bm25 import BM25Retriever
 from .hyde import HyDERetriever
 from .multi_query import get_multi_query_retriever
-from .enhanced import denoise_docs, enrich_with_context, scored_point_to_doc
+from .qdrant_utils import denoise_docs, enrich_with_context, scored_point_to_doc
 
 __all__ = [
     "DirectQdrantRetriever",
